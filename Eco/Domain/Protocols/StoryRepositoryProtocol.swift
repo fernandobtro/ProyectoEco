@@ -9,6 +9,7 @@ import Foundation
 
 protocol StoryRepositoryProtocol {
     func fetchAllStories() async throws -> [Story]
+    func fetchStory(by id: UUID) async throws -> Story?
     func save(story: Story) async throws
     func delete(storyID: UUID) async throws
 }
