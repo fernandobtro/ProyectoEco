@@ -10,7 +10,7 @@ import Foundation
 class DiscoverNearbyStoriesUseCase: NSObject, LocationServiceDelegate {
     
     // Dependencies
-    private let locationService: LocationServiceProtocol
+    private var locationService: LocationServiceProtocol
     private let storyRepository: StoryRepositoryProtocol
     private let userRepository: UserRepositoryProtocol
     
@@ -45,10 +45,10 @@ class DiscoverNearbyStoriesUseCase: NSObject, LocationServiceDelegate {
     }
     
     func didUpdateLocation(latitude: Double, longitude: Double) {
-        <#code#>
+        // TODO: Notificar a la UI para actualizar la posición en el mapa.
     }
     
     func didFailWithError(_ error: any Error) {
-        <#code#>
+        
     }
 }
