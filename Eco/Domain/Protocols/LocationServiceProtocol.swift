@@ -5,12 +5,19 @@
 //  Created by Fernando Buenrostro on 27/02/26.
 //
 
+import Combine
+import CoreLocation
 import Foundation
 
 // MARK: - Location Service Protocol
 
 protocol LocationServiceProtocol {
     var delegate: LocationServiceDelegate? { get set }
+    
+    /// Flujo reactivo que emite la ubicación actual para múltiples interesados (replay del último valor para nuevos suscriptores)
+    var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
+    
+    var storiesUpdatePublisher: AnyPublisher<Void, Never> { get }
     
     /// El "Interruptor" para apagar el radar a voluntad
     var isMonitoringEnabled: Bool { get }

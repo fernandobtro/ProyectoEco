@@ -23,7 +23,7 @@ class StoryCreationViewModel: ObservableObject {
     
     private let plantUseCase: PlantStoryUseCase
     private var locationService: LocationServiceProtocol
-    private var cancellable = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
     
     var locationDisplayString: String {
         guard let location = lastLocation else {
@@ -61,22 +61,17 @@ class StoryCreationViewModel: ObservableObject {
     }
 }
 
-extension StoryCreationViewModel: LocationServiceDelegate {
+extension StoryCreationViewModel {
     
     func setupLocationSubscription() {
-        locationService.delegate = self
-        locationService.requestSingleLocation()
-    }
-    
-    func didUpdateLocation(latitude: Double, longitude: Double) {
-        self.lastLocation = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
-    
-    func didFailWithError(_ error: any Error) {
-        self.error = "No pudimos obtener tu ubicación: \(error.localizedDescription)"
-    }
-    
-    func didEnterStoryRegion(id: UUID) {
+        locationService.locationPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] coordinate in
+                guard let coordinate else { return }
+                self?.lastLocation = coordinate
+            }
+            .store(in: &cancellables)
         
+        locationService.requestSingleLocation()
     }
 }

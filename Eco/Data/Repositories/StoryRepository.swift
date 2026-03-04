@@ -5,11 +5,18 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //
 
+import Combine
 import Foundation
 
 struct StoryRepository: StoryRepositoryProtocol {
     
     private let storyLocalDataSource: StoryLocalDataSourceProtocol
+    
+    private let updatesSubject = PassthroughSubject<Void, Never>()
+    
+    var storiesUpdatePublisher: AnyPublisher<Void, Never> {
+        updatesSubject.eraseToAnyPublisher()
+    }
     
     init(storyLocalDataSource: StoryLocalDataSourceProtocol) {
         self.storyLocalDataSource = storyLocalDataSource
@@ -47,9 +54,11 @@ struct StoryRepository: StoryRepositoryProtocol {
         let entity = StoryEntity(id: story.id, title: story.title, content: story.content, authorID: story.authorID, latitude: story.latitude, longitude: story.longitude)
         
         try await storyLocalDataSource.save(story: entity)
+        updatesSubject.send(())
     }
     
     func delete(storyID: UUID) async throws {
         try await storyLocalDataSource.delete(id: storyID)
+        updatesSubject.send(())
     }
 }

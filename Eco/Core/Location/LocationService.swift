@@ -5,12 +5,18 @@
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
+import Combine
 import CoreLocation
 import Foundation
 
 class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     
     weak var delegate: LocationServiceDelegate?
+    
+    private let locationSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
+    var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> {
+        locationSubject.eraseToAnyPublisher()
+    }
     
     var isMonitoringEnabled: Bool {
         return CLLocationManager.locationServicesEnabled()
@@ -46,6 +52,7 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
         guard let location = locations.last else { return }
         
         delegate?.didUpdateLocation(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
+        locationSubject.send(location.coordinate)
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
