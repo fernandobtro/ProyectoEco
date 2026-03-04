@@ -22,8 +22,28 @@ struct EcoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .modelContainer(container)
+            let context = container.mainContext
+            
+            // Data Layer
+            let storyDS = SwiftDataStoryDataSource(modelContext: context)
+            let userDS = SwiftDataUserDataSource(modelContext: context)
+            
+            let storyRepo = StoryRepository(storyLocalDataSource: storyDS)
+            let userRepo = UserRepository(userLocalDataSource: userDS, storyLocalDataSource: storyDS)
+            
+            // Domain Layer
+            let locationService: LocationServiceProtocol = LocationService()
+            let discoverUseCase = DiscoverNearbyStoriesUseCase(locationService: locationService, storyRepository: storyRepo, userRepository: userRepo)
+            let plantUseCase = PlantStoryUseCase(locationService: locationService, storyRepository: storyRepo, userRepository: userRepo)
+            
+            // Navigation
+            let router = MapRouter(plantStoryUseCase: plantUseCase, locationService: locationService)
+            
+            // Presentation layer
+            let mapViewModel = MapViewModel(discoverUseCase: discoverUseCase)
+            
+            MapView(viewModel: mapViewModel, router: router)
         }
+        .modelContainer(container)
     }
 }

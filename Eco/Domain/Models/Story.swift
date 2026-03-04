@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Story {
+struct Story: Identifiable {
     let id: UUID
     let title: String
     let content: String

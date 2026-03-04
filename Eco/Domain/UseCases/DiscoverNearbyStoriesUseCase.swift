@@ -5,9 +5,11 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //
 
+import Combine
 import Foundation
 
 class DiscoverNearbyStoriesUseCase: NSObject, LocationServiceDelegate {
+    var nearbyStoriesPublisher = PassthroughSubject<[Story], Never>()
     
     // Dependencies
     private var locationService: LocationServiceProtocol
@@ -45,10 +47,30 @@ class DiscoverNearbyStoriesUseCase: NSObject, LocationServiceDelegate {
     }
     
     func didUpdateLocation(latitude: Double, longitude: Double) {
-        // TODO: Notificar a la UI para actualizar la posición en el mapa.
+        Task {
+            do {
+                let stories = try await storyRepository.fetchAllStories()
+                
+                let nearby = stories.filter { story in
+                    abs(story.latitude - latitude) < 0.005 && abs(story.longitude - longitude) < 0.005
+                }
+                nearbyStoriesPublisher.send(nearby)
+            } catch {
+                didFailWithError(error)
+            }
+        }
+    }
+    
+    func requestPermission() async {
+        try? await locationService.requestPermission()
     }
     
     func didFailWithError(_ error: any Error) {
         
+    }
+    
+    func execute(latitude: Double, longitude: Double) async throws -> [Story] {
+        let allStories = try await storyRepository.fetchAllStories()
+        return allStories
     }
 }

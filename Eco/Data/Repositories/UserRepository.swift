@@ -49,6 +49,4 @@ struct UserRepository: UserRepositoryProtocol {
         }
         return stories
     }
-
-    
 }
