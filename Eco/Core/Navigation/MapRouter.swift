@@ -24,13 +24,12 @@ enum MapDestination: Identifiable, Hashable {
 class MapRouter: ObservableObject {
     @Published var sheetDestination: MapDestination?
     
-    // Needed dependencies for building the view
-    private let plantStoryUseCase: PlantStoryUseCase
-    private let locationService: LocationServiceProtocol
-    
-    init(plantStoryUseCase: PlantStoryUseCase, locationService: LocationServiceProtocol) {
+    private let plantStoryUseCase: PlantStoryUseCaseProtocol
+    private let getLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol
+
+    init(plantStoryUseCase: PlantStoryUseCaseProtocol, getLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol) {
         self.plantStoryUseCase = plantStoryUseCase
-        self.locationService = locationService
+        self.getLocationForPlantingUseCase = getLocationForPlantingUseCase
     }
     
     func navigateToCreateStory() {
@@ -46,7 +45,7 @@ class MapRouter: ObservableObject {
     func view(for destination: MapDestination) -> some View {
         switch destination {
         case .createStory:
-            let viewModel = StoryCreationViewModel(plantUseCase: plantStoryUseCase, locationService: locationService)
+            let viewModel = StoryCreationViewModel(plantUseCase: plantStoryUseCase, getLocationUseCase: getLocationForPlantingUseCase)
             StoryCreationView(viewModel: viewModel)
         }
     }

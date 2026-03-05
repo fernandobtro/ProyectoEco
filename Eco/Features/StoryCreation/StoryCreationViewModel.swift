@@ -21,8 +21,8 @@ class StoryCreationViewModel: ObservableObject {
     @Published var error: String?
     @Published var lastLocation: CLLocationCoordinate2D?
     
-    private let plantUseCase: PlantStoryUseCase
-    private var locationService: LocationServiceProtocol
+    private let plantUseCase: PlantStoryUseCaseProtocol
+    private let getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol
     private var cancellables = Set<AnyCancellable>()
     
     var locationDisplayString: String {
@@ -33,9 +33,9 @@ class StoryCreationViewModel: ObservableObject {
         return String(format: "Lat: %.4f, Lon: %.4f", location.latitude, location.longitude)
     }
     
-    init(plantUseCase: PlantStoryUseCase, locationService: LocationServiceProtocol) {
+    init(plantUseCase: PlantStoryUseCaseProtocol, getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol) {
         self.plantUseCase = plantUseCase
-        self.locationService = locationService
+        self.getLocationUseCase = getLocationUseCase
         setupLocationSubscription()
     }
     
@@ -64,14 +64,14 @@ class StoryCreationViewModel: ObservableObject {
 extension StoryCreationViewModel {
     
     func setupLocationSubscription() {
-        locationService.locationPublisher
+        getLocationUseCase.locationPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] coordinate in
                 guard let coordinate else { return }
                 self?.lastLocation = coordinate
             }
             .store(in: &cancellables)
-        
-        locationService.requestSingleLocation()
+
+        getLocationUseCase.requestLocation()
     }
 }
