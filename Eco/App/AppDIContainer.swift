@@ -34,24 +34,34 @@ final class AppDIContainer {
     }()
 
     // MARK: - Use cases
-    private lazy var discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCase = {
-        let useCase = DiscoverNearbyStoriesUseCase(
+    private lazy var discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol = {
+        DiscoverNearbyStoriesUseCaseImpl(storyRepository: storyRepository)
+    }()
+    private lazy var trackUserProgressOnStoryEntryUseCase: TrackUserProgressOnStoryEntryUseCaseProtocol = {
+        TrackUserProgressOnStoryEntryUseCaseImpl(userRepository: userRepository, storyRepository: storyRepository)
+    }()
+
+    // MARK: - Adapters (Core: conectan infraestructura con dominio)
+    private lazy var locationEventsAdapter: LocationEventsAdapter = {
+        LocationEventsAdapter(
             locationService: locationService,
-            storyRepository: storyRepository,
-            userRepository: userRepository
+            discoverNearbyStoriesUseCase: discoverNearbyStoriesUseCase,
+            trackProgressOnStoryEntryUseCase: trackUserProgressOnStoryEntryUseCase
         )
-        return useCase
     }()
     private lazy var plantStoryUseCase: PlantStoryUseCaseProtocol = {
         PlantStoryUseCaseImpl(storyRepository: storyRepository, userRepository: userRepository)
     }()
+    private lazy var getLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol = {
+        GetCurrentLocationForPlantingUseCaseImpl(locationService: locationService)
+    }()
 
     // MARK: - Presentation (misma instancia para no recrear en cada render)
     private lazy var mapViewModel: MapViewModel = {
-        MapViewModel(discoverUseCase: discoverNearbyStoriesUseCase)
+        MapViewModel(discoverUseCase: discoverNearbyStoriesUseCase, discoveryController: locationEventsAdapter)
     }()
     private lazy var mapRouter: MapRouter = {
-        MapRouter(plantStoryUseCase: plantStoryUseCase, locationService: locationService)
+        MapRouter(plantStoryUseCase: plantStoryUseCase, getLocationForPlantingUseCase: getLocationForPlantingUseCase)
     }()
 
     func makeMapViewModel() -> MapViewModel { mapViewModel }

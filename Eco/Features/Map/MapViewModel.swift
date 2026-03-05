@@ -16,18 +16,17 @@ class MapViewModel: ObservableObject {
     @Published var nearbyStories: [Story] = []
     
     private var cancellables = Set<AnyCancellable>()
-    private let discoverUseCase: DiscoverNearbyStoriesUseCase
-    
-    init(discoverUseCase: DiscoverNearbyStoriesUseCase) {
+    private let discoverUseCase: DiscoverNearbyStoriesUseCaseProtocol
+    private let discoveryController: LocationDiscoveryControlling
+
+    init(discoverUseCase: DiscoverNearbyStoriesUseCaseProtocol, discoveryController: LocationDiscoveryControlling) {
         self.discoverUseCase = discoverUseCase
+        self.discoveryController = discoveryController
         setupSubscriptions()
-        Task {
-            await discoverUseCase.requestPermission()
-        }
-        
-        self.discoverUseCase.startDiscovery()
+        Task { await discoveryController.requestPermission() }
+        discoveryController.startDiscovery()
     }
-    
+
     private func setupSubscriptions() {
         discoverUseCase.nearbyStoriesPublisher
             .receive(on: RunLoop.main)
