@@ -22,8 +22,12 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
         return CLLocationManager.locationServicesEnabled()
     }
     
+    var storiesUpdatePublisher: AnyPublisher<Void, Never> {
+        Empty(completeImmediately: false).eraseToAnyPublisher()
+    }
+
     private let locationManager = CLLocationManager()
-    
+
     override init() {
         super.init()
         locationManager.delegate = self

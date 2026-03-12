@@ -1,5 +1,5 @@
 //
-//  PlantStoryUseCase.swift
+//  PlantStoryUseCaseProtocol.swift
 //  Eco
 //
 //  Created by Fernando Buenrostro on 28/02/26.
