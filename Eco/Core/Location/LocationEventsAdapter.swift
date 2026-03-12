@@ -9,7 +9,7 @@ import Foundation
 
 /// Conecta eventos del LocationService (infraestructura) con los casos de uso de dominio.
 final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDiscoveryControlling {
-    private let locationService: LocationServiceProtocol
+    private var locationService: LocationServiceProtocol
     private let discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol
     private let trackProgressOnStoryEntryUseCase: TrackUserProgressOnStoryEntryUseCaseProtocol
 
