@@ -26,33 +26,16 @@ struct StoryRepository: StoryRepositoryProtocol {
     
     func fetchAllStories() async throws -> [Story] {
         let entities = try await storyLocalDataSource.fetchAll()
-        
-        return entities.map { entity in
-            Story(id: entity.id,
-                  title: entity.title,
-                  content: entity.content,
-                  authorID: entity.authorID,
-                  latitude: entity.latitude,
-                  longitude: entity.longitude
-            )
-        }
+        return entities.map(StoryPersistenceMapper.toDomain)
     }
     
     func fetchStory(by id: UUID) async throws -> Story? {
         guard let entity = try await storyLocalDataSource.fetch(by: id) else { return nil }
-        
-        return Story(id: entity.id,
-                     title: entity.title,
-                     content: entity.content,
-                     authorID: entity.authorID,
-                     latitude: entity.latitude,
-                     longitude: entity.longitude
-                )
+        return StoryPersistenceMapper.toDomain(entity)
     }
     
     func save(story: Story) async throws {
-        let entity = StoryEntity(id: story.id, title: story.title, content: story.content, authorID: story.authorID, latitude: story.latitude, longitude: story.longitude)
-        
+        let entity = StoryPersistenceMapper.toEntity(story)
         try await storyLocalDataSource.save(story: entity)
         updatesSubject.send(())
     }

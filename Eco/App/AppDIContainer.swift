@@ -32,6 +32,13 @@ final class AppDIContainer {
     private lazy var locationService: LocationServiceProtocol = {
         LocationService()
     }()
+    private lazy var locationEventsAdapter: LocationEventsAdapter = {
+        LocationEventsAdapter(
+            locationService: locationService,
+            discoverNearbyStoriesUseCase: discoverNearbyStoriesUseCase,
+            trackProgressOnStoryEntryUseCase: trackUserProgressOnStoryEntryUseCase
+        )
+    }()
 
     // MARK: - Use cases
     private lazy var discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol = {
@@ -40,15 +47,6 @@ final class AppDIContainer {
     private lazy var trackUserProgressOnStoryEntryUseCase: TrackUserProgressOnStoryEntryUseCaseProtocol = {
         TrackUserProgressOnStoryEntryUseCaseImpl(userRepository: userRepository, storyRepository: storyRepository)
     }()
-
-    // MARK: - Adapters (Core: conectan infraestructura con dominio)
-    private lazy var locationEventsAdapter: LocationEventsAdapter = {
-        LocationEventsAdapter(
-            locationService: locationService,
-            discoverNearbyStoriesUseCase: discoverNearbyStoriesUseCase,
-            trackProgressOnStoryEntryUseCase: trackUserProgressOnStoryEntryUseCase
-        )
-    }()
     private lazy var plantStoryUseCase: PlantStoryUseCaseProtocol = {
         PlantStoryUseCaseImpl(storyRepository: storyRepository, userRepository: userRepository)
     }()
@@ -56,16 +54,16 @@ final class AppDIContainer {
         GetCurrentLocationForPlantingUseCaseImpl(locationService: locationService)
     }()
 
-    // MARK: - Presentation (misma instancia para no recrear en cada render)
+    /// Misma instancia para la pantalla raíz (mapa) para no perder estado.
     private lazy var mapViewModel: MapViewModel = {
-        MapViewModel(discoverUseCase: discoverNearbyStoriesUseCase, discoveryController: locationEventsAdapter)
+        MapViewModel(
+            discoverUseCase: discoverNearbyStoriesUseCase,
+            discoveryController: locationEventsAdapter
+        )
     }()
     private lazy var mapRouter: MapRouter = {
-        MapRouter(plantStoryUseCase: plantStoryUseCase, getLocationForPlantingUseCase: getLocationForPlantingUseCase)
+        MapRouter(storyCreationViewFactory: { [weak self] in self?.makeStoryCreationView() })
     }()
-
-    func makeMapViewModel() -> MapViewModel { mapViewModel }
-    func makeMapRouter() -> MapRouter { mapRouter }
 
     init() {
         do {
@@ -73,5 +71,30 @@ final class AppDIContainer {
         } catch {
             fatalError("No se pudo inicializar la base de datos: \(error)")
         }
+    }
+}
+
+// MARK: - ViewModel Factories
+
+@MainActor
+extension AppDIContainer {
+
+    func makeMapViewModel() -> MapViewModel {
+        mapViewModel
+    }
+
+    func makeMapRouter() -> MapRouter {
+        mapRouter
+    }
+
+    func makeStoryCreationView() -> StoryCreationView {
+        StoryCreationView(viewModel: makeStoryCreationViewModel())
+    }
+
+    func makeStoryCreationViewModel() -> StoryCreationViewModel {
+        StoryCreationViewModel(
+            plantUseCase: plantStoryUseCase,
+            getLocationUseCase: getLocationForPlantingUseCase
+        )
     }
 }

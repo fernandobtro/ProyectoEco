@@ -5,35 +5,38 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //
 
-import Combine
 import Foundation
 import MapKit
+import Observation
 
 @MainActor
-class MapViewModel: ObservableObject {
-    @Published var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 19.4326, longitude: -99.1332), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+@Observable
+class MapViewModel {
+    var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 19.4326, longitude: -99.1332), span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
     
-    @Published var nearbyStories: [Story] = []
+    var nearbyStories: [Story] = []
     
-    private var cancellables = Set<AnyCancellable>()
     private let discoverUseCase: DiscoverNearbyStoriesUseCaseProtocol
     private let discoveryController: LocationDiscoveryControlling
 
     init(discoverUseCase: DiscoverNearbyStoriesUseCaseProtocol, discoveryController: LocationDiscoveryControlling) {
         self.discoverUseCase = discoverUseCase
         self.discoveryController = discoveryController
-        setupSubscriptions()
-        Task { await discoveryController.requestPermission() }
-        discoveryController.startDiscovery()
     }
 
-    private func setupSubscriptions() {
-        discoverUseCase.nearbyStoriesPublisher
-            .receive(on: RunLoop.main)
-            .sink { [weak self] stories in
-                self?.nearbyStories = stories
-                print("MapViewModel: Recibidas \(stories.count) historias cercanas")
+    /// Llamar desde la vista en `.task { await viewModel.onAppear() }`.
+    func onAppear() async {
+        await discoveryController.requestPermission()
+        discoveryController.startDiscovery()
+
+        // Consumir el flujo de historias cercanas en segundo plano
+        Task {
+            for await stories in discoverUseCase.nearbyStories() {
+                self.nearbyStories = stories
             }
-            .store(in: &cancellables)
+        }
+
+        // Bootstrap: primera carga con el centro actual del mapa
+        await discoverUseCase.refreshNearbyStories(latitude: region.center.latitude, longitude: region.center.longitude)
     }
 }

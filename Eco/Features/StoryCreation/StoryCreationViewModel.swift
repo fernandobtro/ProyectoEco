@@ -5,73 +5,59 @@
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
-import Combine
 import CoreLocation
 import Foundation
+import Observation
 
 @MainActor
-class StoryCreationViewModel: ObservableObject {
+@Observable
+class StoryCreationViewModel {
     
     // Inputs
-    @Published var title: String = ""
-    @Published var content: String = ""
+    var title: String = ""
+    var content: String = ""
     
     // Operation Status
-    @Published var isPlanting: Bool = false
-    @Published var error: String?
-    @Published var lastLocation: CLLocationCoordinate2D?
+    var isPlanting: Bool = false
+    var error: String?
+    var lastLocation: CLLocationCoordinate2D?
     
     private let plantUseCase: PlantStoryUseCaseProtocol
     private let getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol
-    private var cancellables = Set<AnyCancellable>()
     
     var locationDisplayString: String {
         guard let location = lastLocation else {
             return "Buscando ubicación..."
         }
-        
         return String(format: "Lat: %.4f, Lon: %.4f", location.latitude, location.longitude)
     }
     
     init(plantUseCase: PlantStoryUseCaseProtocol, getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol) {
         self.plantUseCase = plantUseCase
         self.getLocationUseCase = getLocationUseCase
-        setupLocationSubscription()
+    }
+    
+    /// Llamar desde la vista en `.task { await viewModel.updateLocation() }`.
+    func updateLocation() async {
+        lastLocation = await getLocationUseCase.requestLocation()
     }
     
     func plantStory() async {
-        // Validate coordinates.
         guard let location = lastLocation else {
             self.error = "Esperando señal del GPS..."
             return
         }
         
         isPlanting = true
+        defer { isPlanting = false }
         do {
             try await plantUseCase.execute(title: title,
                                            content: content,
                                            authorId: UUID(), // TODO: Id temporal hasta que tengamos auth
                                            latitude: location.latitude,
                                            longitude: location.longitude)
-            isPlanting = false
         } catch {
             self.error = "No pudimos plantar tu Eco: \(error.localizedDescription)"
-            isPlanting = false
         }
-    }
-}
-
-extension StoryCreationViewModel {
-    
-    func setupLocationSubscription() {
-        getLocationUseCase.locationPublisher
-            .receive(on: RunLoop.main)
-            .sink { [weak self] coordinate in
-                guard let coordinate else { return }
-                self?.lastLocation = coordinate
-            }
-            .store(in: &cancellables)
-
-        getLocationUseCase.requestLocation()
     }
 }

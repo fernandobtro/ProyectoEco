@@ -2,30 +2,32 @@
 //  DiscoverNearbyStoriesUseCaseImpl.swift
 //  Eco
 //
-//  Created by Fernando Buenrostro on 02/03/26.
-//
 
 import Combine
 import Foundation
 
+@MainActor
 final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
-    private let subject = PassthroughSubject<[Story], Never>()
+    private var continuation: AsyncStream<[Story]>.Continuation?
     private var cancellables = Set<AnyCancellable>()
     private var lastLatitude: Double?
     private var lastLongitude: Double?
-
-    var nearbyStoriesPublisher: AnyPublisher<[Story], Never> {
-        subject.eraseToAnyPublisher()
-    }
 
     init(storyRepository: StoryRepositoryProtocol) {
         self.storyRepository = storyRepository
         setupRepositorySubscription()
     }
 
+    func nearbyStories() -> AsyncStream<[Story]> {
+        AsyncStream<[Story]> { [weak self] continuation in
+            self?.continuation = continuation
+        }
+    }
+
     private func setupRepositorySubscription() {
         storyRepository.storiesUpdatePublisher
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self,
                       let lat = self.lastLatitude,
@@ -43,7 +45,7 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
             let nearby = stories.filter {
                 abs($0.latitude - latitude) < 0.005 && abs($0.longitude - longitude) < 0.005
             }
-            subject.send(nearby)
+            continuation?.yield(nearby)
         } catch {
             // Política de errores: por ahora silencioso
         }

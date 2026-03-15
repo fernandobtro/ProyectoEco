@@ -19,12 +19,9 @@ struct UserRepository: UserRepositoryProtocol {
     
     func getCurrentUser() async throws -> User? {
         guard let userEntity = try await userLocalDataSource.fetchCurrentUser() else { return nil }
-        
         let plantedStories = try await hydrateStories(ids: userEntity.plantedStoryIDs)
         let foundStories = try await hydrateStories(ids: userEntity.foundStoryIDs)
-        
-        return User(id: userEntity.id, name: userEntity.name, email: userEntity.email, plantedStories: plantedStories, foundStories: foundStories)
-
+        return UserPersistenceMapper.toDomain(entity: userEntity, plantedStories: plantedStories, foundStories: foundStories)
     }
     
     func updateUserProgress(userId: UUID, storyId: UUID) async throws {
@@ -39,12 +36,9 @@ struct UserRepository: UserRepositoryProtocol {
     
     private func hydrateStories(ids: [UUID]) async throws -> [Story] {
         var stories: [Story] = []
-        
         for id in ids {
             if let entity = try await storyLocalDataSource.fetch(by: id) {
-                let story = Story(id: entity.id, title: entity.title, content: entity.content, authorID: entity.authorID, latitude: entity.latitude, longitude: entity.longitude
-                )
-                stories.append(story)
+                stories.append(StoryPersistenceMapper.toDomain(entity))
             }
         }
         return stories

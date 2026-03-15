@@ -10,10 +10,11 @@ import MapKit
 import SwiftUI
 
 struct MapView: View {
-    @StateObject var viewModel: MapViewModel
-    @StateObject var router: MapRouter
+    @State var viewModel: MapViewModel
+    @State var router: MapRouter
     
     var body: some View {
+        @Bindable var router = router
         ZStack {
             Map {
                 ForEach(viewModel.nearbyStories) { story in
@@ -55,6 +56,9 @@ struct MapView: View {
         }
         .sheet(item: $router.sheetDestination) { destination in
             router.view(for: destination)
+        }
+        .task {
+            await viewModel.onAppear()
         }
     }
 }

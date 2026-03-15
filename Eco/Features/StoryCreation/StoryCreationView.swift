@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct StoryCreationView: View {
-    @ObservedObject var viewModel: StoryCreationViewModel
+    @Bindable var viewModel: StoryCreationViewModel
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -59,10 +59,13 @@ struct StoryCreationView: View {
                     }
                 }
             }
-            .alert("¡Ups!", isPresented: .init(get: { viewModel.error != nil }, set: { _ in viewModel.error = nil } )) {
+            .alert("¡Ups!", isPresented: .init(get: { viewModel.error != nil }, set: { _ in viewModel.error = nil })) {
                 Button("Entendido", role: .cancel) { }
             } message: {
                 Text(viewModel.error ?? "")
+            }
+            .task {
+                await viewModel.updateLocation()
             }
         }
     }

@@ -5,11 +5,10 @@
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
-import Combine
 import CoreLocation
 import Foundation
 
 protocol GetCurrentLocationForPlantingUseCaseProtocol {
-    var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
-    func requestLocation()
+    /// Solicita una ubicación y devuelve cuando está disponible (o nil si falla/timeout).
+    func requestLocation() async -> CLLocationCoordinate2D?
 }

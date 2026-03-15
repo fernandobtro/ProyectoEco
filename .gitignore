@@ -13,6 +13,10 @@ xcuserdata/
 # macOS
 .DS_Store
 
+# Local dot directories
+.*/
+!.git/
+
 # Xcode Patch (Toptal)
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj

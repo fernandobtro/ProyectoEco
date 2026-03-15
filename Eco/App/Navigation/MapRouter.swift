@@ -5,8 +5,8 @@
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
-import Combine
 import Foundation
+import Observation
 import SwiftUI
 
 // MARK: - Destinations
@@ -21,15 +21,14 @@ enum MapDestination: Identifiable, Hashable {
 }
 
 // MARK: - Router
-class MapRouter: ObservableObject {
-    @Published var sheetDestination: MapDestination?
+@Observable
+class MapRouter {
+    var sheetDestination: MapDestination?
     
-    private let plantStoryUseCase: PlantStoryUseCaseProtocol
-    private let getLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol
+    private let storyCreationViewFactory: () -> StoryCreationView?
 
-    init(plantStoryUseCase: PlantStoryUseCaseProtocol, getLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol) {
-        self.plantStoryUseCase = plantStoryUseCase
-        self.getLocationForPlantingUseCase = getLocationForPlantingUseCase
+    init(storyCreationViewFactory: @escaping () -> StoryCreationView?) {
+        self.storyCreationViewFactory = storyCreationViewFactory
     }
     
     func navigateToCreateStory() {
@@ -40,13 +39,15 @@ class MapRouter: ObservableObject {
         sheetDestination = nil
     }
     
-    // Factory Method
     @ViewBuilder
     func view(for destination: MapDestination) -> some View {
         switch destination {
         case .createStory:
-            let viewModel = StoryCreationViewModel(plantUseCase: plantStoryUseCase, getLocationUseCase: getLocationForPlantingUseCase)
-            StoryCreationView(viewModel: viewModel)
+            if let view = storyCreationViewFactory() {
+                view
+            } else {
+                EmptyView()
+            }
         }
     }
 }
