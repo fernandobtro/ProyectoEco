@@ -9,4 +9,5 @@ import Foundation
 
 protocol GetCurrentSessionUseCaseProtocol {
     func execute() -> String?
+    func getNickname() -> String?
 }

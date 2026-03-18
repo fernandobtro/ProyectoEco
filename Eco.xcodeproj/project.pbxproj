@@ -16,9 +16,22 @@
 		39ACEFB82F501F7400C56F04 /* Eco.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eco.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		397801B52F6A4A6200CAC499 /* Exceptions for "Eco" folder in "Eco" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 39ACEFB72F501F7400C56F04 /* Eco */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		39ACEFBA2F501F7400C56F04 /* Eco */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				397801B52F6A4A6200CAC499 /* Exceptions for "Eco" folder in "Eco" target */,
+			);
 			path = Eco;
 			sourceTree = "<group>";
 		};
@@ -294,6 +307,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Eco/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Eco necesita tu ubicación para que puedas descubrir y plantar historias en las calles de la ciudad.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Eco necesita tu ubicación para que puedas descubrir y plantar historias en las calles de la ciudad.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -329,6 +343,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Eco/Info.plist;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Eco necesita tu ubicación para que puedas descubrir y plantar historias en las calles de la ciudad.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Eco necesita tu ubicación para que puedas descubrir y plantar historias en las calles de la ciudad.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

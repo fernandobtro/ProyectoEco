@@ -43,3 +43,14 @@ struct LoginView: View {
         .padding()
     }
 }
+
+private struct MockLoginUseCase: LoginUseCaseProtocol {
+    func execute(email: String, password: String) async throws -> String {
+        "mock-uid"
+    }
+}
+
+#Preview {
+    let viewModel = LoginViewModel(loginUseCase: MockLoginUseCase())
+    LoginView(viewModel: viewModel, onRegisterTap: {})
+}

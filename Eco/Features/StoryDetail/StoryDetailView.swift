@@ -130,6 +130,10 @@ struct StoryDetailView: View {
         func getCurrentUserId() -> UUID {
             UUID()
         }
+
+        func getNickname() -> String? {
+            "Mock User"
+        }
     }
 
     let vm = StoryDetailViewModel(

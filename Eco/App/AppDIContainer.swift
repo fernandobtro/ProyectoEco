@@ -147,7 +147,10 @@ final class AppDIContainer {
     }()
     
     private lazy var getCurrentSessionUseCase: GetCurrentSessionUseCaseProtocol = {
-        GetCurrentSessionUseCaseImpl(repository: authRepository)
+        GetCurrentSessionUseCaseImpl(
+            repository: authRepository,
+            sessionRepository: sessionRepository
+        )
     }()
 
     private lazy var createAuthorProfileUseCase: CreateAuthorProfileUseCase = {

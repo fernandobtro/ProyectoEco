@@ -42,3 +42,21 @@ struct RegisterView: View {
         .padding()
     }
 }
+
+private struct MockRegisterUseCase: RegisterUseCaseProtocol {
+    func execute(email: String, password: String) async throws -> String {
+        UUID().uuidString
+    }
+}
+
+private struct MockCreateAuthorProfileUseCase: CreateAuthorProfileUseCase {
+    func execute(profile: AuthorProfile) async throws { }
+}
+
+#Preview {
+    let viewModel = RegisterViewModel(
+        registerUseCase: MockRegisterUseCase(),
+        createAuthorProfileUseCase: MockCreateAuthorProfileUseCase()
+    )
+    RegisterView(viewModel: viewModel, onLoginTap: {})
+}

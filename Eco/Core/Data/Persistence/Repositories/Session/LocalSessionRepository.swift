@@ -10,6 +10,7 @@ import Foundation
 class LocalSessionRepository: SessionRepositoryProtocol {
     private let defaults = UserDefaults.standard
     private let userIdKey = "current_eco_user_id"
+    private let nicknameKey = "current_eco_nickname"
     
     func getCurrentUserId() -> UUID {
         if let savedIdString = defaults.string(forKey: userIdKey),
@@ -20,5 +21,13 @@ class LocalSessionRepository: SessionRepositoryProtocol {
             defaults.set(newId.uuidString, forKey: userIdKey)
             return newId
         }
+    }
+    
+    func saveNickname(_ name: String) {
+        defaults.set(name, forKey: nicknameKey)
+    }
+    
+    func getNickname() -> String? {
+        return defaults.string(forKey: nicknameKey)
     }
 }

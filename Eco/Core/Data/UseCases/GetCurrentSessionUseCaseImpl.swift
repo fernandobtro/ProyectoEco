@@ -8,13 +8,19 @@
 import Foundation
 
 final class GetCurrentSessionUseCaseImpl: GetCurrentSessionUseCaseProtocol {
-    private let repository: AuthRepositoryProtocol
+    private let authRepository: AuthRepositoryProtocol
+    private let sessionRepository: SessionRepositoryProtocol
     
-    init(repository: AuthRepositoryProtocol) {
-        self.repository = repository
+    init(repository: AuthRepositoryProtocol, sessionRepository: SessionRepositoryProtocol) {
+        self.authRepository = repository
+        self.sessionRepository = sessionRepository
     }
     
     func execute() -> String? {
-        repository.currentUserId()
+        authRepository.currentUserId()
+    }
+    
+    func getNickname() -> String? {
+        sessionRepository.getNickname()
     }
 }

@@ -12,10 +12,12 @@ import Observation
 @Observable
 final class AuthGateViewModel {
     
-    enum State {
+    enum State: Equatable {
         case checking
-        case authenticated(String) // UID
         case unauthenticated
+        case needsNickname
+        case authenticated(String) // UID
+        
     }
     
     private let getCurrentSessionUseCase: GetCurrentSessionUseCaseProtocol
@@ -33,7 +35,14 @@ final class AuthGateViewModel {
             guard let self else { return }
             
             if let uid = user?.uid {
-                self.state = .authenticated(uid)
+                // Verificamos si ya existe el pseudónimo en el repositorio local
+                // Nota: Aquí podrías necesitar añadir un método al UseCase o usar el repositorio directamente
+                if let _ = self.getCurrentSessionUseCase.getNickname() {
+                    self.state = .authenticated(uid)
+                } else {
+                    // Si está logueado pero no tiene nombre, lo mandamos a la Página 5
+                    self.state = .needsNickname
+                }
             } else {
                 self.state = .unauthenticated
             }

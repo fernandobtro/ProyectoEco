@@ -9,4 +9,5 @@ import Foundation
 
 protocol SessionRepositoryProtocol {
     func getCurrentUserId() -> UUID
+    func getNickname() -> String?
 }
