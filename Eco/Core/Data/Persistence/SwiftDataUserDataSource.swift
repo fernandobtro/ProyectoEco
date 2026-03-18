@@ -26,7 +26,7 @@ class SwiftDataUserDataSource: UserLocalDataSourceProtocol {
         return try modelContext.fetch(descriptor).first
     }
     
-    func updateFoundStories(userId: UUID, storyId: UUID) async throws {
+    func updateFoundStories(userId: UUID, storyId: UUID) async throws -> Bool {
         let predicate = #Predicate<UserEntity> { user in
             user.id == userId
         }
@@ -37,7 +37,10 @@ class SwiftDataUserDataSource: UserLocalDataSourceProtocol {
             if !user.foundStoryIDs.contains(storyId) {
                 user.foundStoryIDs.append(storyId)
                 try modelContext.save()
+                return true
             }
+            return false
         }
+        return false
     }
 }

@@ -38,7 +38,13 @@ final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDi
     }
 
     func didUpdateLocation(latitude: Double, longitude: Double) {
-        Task { await discoverNearbyStoriesUseCase.refreshNearbyStories(latitude: latitude, longitude: longitude) }
+        Task {
+            await discoverNearbyStoriesUseCase.refreshNearbyStories(latitude: latitude, longitude: longitude)
+            let nearbyStoryIDs = discoverNearbyStoriesUseCase.currentNearbyStoryIDs()
+            for storyId in nearbyStoryIDs {
+                await trackProgressOnStoryEntryUseCase.execute(storyId: storyId)
+            }
+        }
     }
 
     func didFailWithError(_ error: Error) {

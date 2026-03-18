@@ -4,6 +4,7 @@
 //
 
 import Combine
+import CoreLocation
 import Foundation
 
 @MainActor
@@ -13,6 +14,7 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
     private var cancellables = Set<AnyCancellable>()
     private var lastLatitude: Double?
     private var lastLongitude: Double?
+    private var lastNearbyStoryIDs: [UUID] = []
 
     init(storyRepository: StoryRepositoryProtocol) {
         self.storyRepository = storyRepository
@@ -23,6 +25,10 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         AsyncStream<[Story]> { [weak self] continuation in
             self?.continuation = continuation
         }
+    }
+
+    func currentNearbyStoryIDs() -> [UUID] {
+        lastNearbyStoryIDs
     }
 
     private func setupRepositorySubscription() {
@@ -42,9 +48,15 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         lastLongitude = longitude
         do {
             let stories = try await storyRepository.fetchAllStories()
-            let nearby = stories.filter {
-                abs($0.latitude - latitude) < 0.005 && abs($0.longitude - longitude) < 0.005
+            let userLocation = CLLocation(latitude: latitude, longitude: longitude)
+            let maxDistance: CLLocationDistance = 50 // metros
+
+            let nearby = stories.filter { story in
+                let storyLocation = CLLocation(latitude: story.latitude, longitude: story.longitude)
+                let distance = userLocation.distance(from: storyLocation)
+                return distance <= maxDistance
             }
+            lastNearbyStoryIDs = nearby.map(\.id)
             continuation?.yield(nearby)
         } catch {
             // Política de errores: por ahora silencioso

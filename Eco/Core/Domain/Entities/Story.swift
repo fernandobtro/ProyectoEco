@@ -14,4 +14,5 @@ struct Story: Identifiable, Equatable {
     let authorID: UUID
     let latitude: Double
     let longitude: Double
+    let isSynced: Bool
 }

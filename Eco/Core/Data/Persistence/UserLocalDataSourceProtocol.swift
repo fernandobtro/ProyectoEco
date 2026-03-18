@@ -10,5 +10,6 @@ import Foundation
 protocol UserLocalDataSourceProtocol {
     func save(user: UserEntity) async throws
     func fetchCurrentUser() async throws -> UserEntity?
-    func updateFoundStories(userId: UUID, storyId: UUID) async throws
+    /// Devuelve `true` cuando agregó un storyId nuevo a foundStoryIDs.
+    func updateFoundStories(userId: UUID, storyId: UUID) async throws -> Bool
 }

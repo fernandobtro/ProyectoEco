@@ -12,4 +12,7 @@ protocol StoryLocalDataSourceProtocol {
     func fetchAll() async throws -> [StoryEntity]
     func fetch(by id: UUID) async throws -> StoryEntity?
     func delete(id: UUID) async throws
+    func fetchPending() async throws -> [StoryEntity]
+    func saveChanges() async throws
+    func findByRemoteId(_ id: String) async throws -> StoryEntity?
 }

@@ -6,5 +6,5 @@
 import Foundation
 
 protocol PlantStoryUseCaseProtocol {
-    func execute(title: String, content: String, authorId: UUID, latitude: Double, longitude: Double) async throws
+    func execute(title: String, content: String, latitude: Double, longitude: Double) async throws
 }

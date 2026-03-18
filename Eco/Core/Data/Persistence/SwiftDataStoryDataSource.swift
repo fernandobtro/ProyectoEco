@@ -44,4 +44,26 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
             try modelContext.save()
         }
     }
+    
+    func fetchPending() async throws -> [StoryEntity] {
+        // Historias que aún no están sincronizadas (create/update/delete pendientes).
+        let descriptor = FetchDescriptor<StoryEntity>(
+            predicate: #Predicate {
+                $0.syncStatus != "synced"
+            }
+        )
+        return try modelContext.fetch(descriptor)
+    }
+
+    func saveChanges() async throws {
+        try modelContext.save()
+    }
+
+    func findByRemoteId(_ id: String) async throws -> StoryEntity? {
+        let predicate = #Predicate<StoryEntity> { story in
+            story.remoteId == id
+        }
+        let descriptor = FetchDescriptor<StoryEntity>(predicate: predicate)
+        return try modelContext.fetch(descriptor).first
+    }
 }

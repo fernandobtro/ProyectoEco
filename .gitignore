@@ -22,3 +22,8 @@ xcuserdata/
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
 !*.xcodeproj/project.xcworkspace/
+
+# Firebase config (not for public repos)
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+

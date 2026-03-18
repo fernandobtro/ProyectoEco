@@ -48,7 +48,7 @@ struct ContentView: View {
                 content: "Aquí empezó una gran aventura en CDMX.",
                 authorID: UUID(),
                 latitude: 19.4326,
-                longitude: -99.1332
+                longitude: -99.1332, isSynced: false
             )
             
             do {

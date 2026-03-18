@@ -9,6 +9,7 @@ import Foundation
 
 protocol UserRepositoryProtocol {
     func getCurrentUser() async throws -> User?
-    func updateUserProgress(userId: UUID, storyId: UUID) async throws
+    /// Devuelve `true` cuando la historia se marca como descubierta por primera vez.
+    func updateUserProgress(userId: UUID, storyId: UUID) async throws -> Bool
     func syncWithCloud() async throws 
 }

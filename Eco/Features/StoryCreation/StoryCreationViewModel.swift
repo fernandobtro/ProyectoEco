@@ -24,6 +24,7 @@ class StoryCreationViewModel {
     
     private let plantUseCase: PlantStoryUseCaseProtocol
     private let getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol
+    private let syncStoriesUseCase: SyncStoriesUseCase
     
     var locationDisplayString: String {
         guard let location = lastLocation else {
@@ -32,9 +33,14 @@ class StoryCreationViewModel {
         return String(format: "Lat: %.4f, Lon: %.4f", location.latitude, location.longitude)
     }
     
-    init(plantUseCase: PlantStoryUseCaseProtocol, getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol) {
+    init(
+        plantUseCase: PlantStoryUseCaseProtocol,
+        getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol,
+        syncStoriesUseCase: SyncStoriesUseCase
+    ) {
         self.plantUseCase = plantUseCase
         self.getLocationUseCase = getLocationUseCase
+        self.syncStoriesUseCase = syncStoriesUseCase
     }
     
     /// Llamar desde la vista en `.task { await viewModel.updateLocation() }`.
@@ -43,6 +49,14 @@ class StoryCreationViewModel {
     }
     
     func plantStory() async {
+        let cleanTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard !cleanTitle.isEmpty, !cleanContent.isEmpty else {
+            self.error = "El Título y la historia no pueden estar vacíos."
+            return
+        }
+        
         guard let location = lastLocation else {
             self.error = "Esperando señal del GPS..."
             return
@@ -50,12 +64,19 @@ class StoryCreationViewModel {
         
         isPlanting = true
         defer { isPlanting = false }
+        
         do {
-            try await plantUseCase.execute(title: title,
-                                           content: content,
-                                           authorId: UUID(), // TODO: Id temporal hasta que tengamos auth
-                                           latitude: location.latitude,
-                                           longitude: location.longitude)
+            try await plantUseCase.execute(
+                title: cleanTitle,
+                content: cleanContent,
+                latitude: location.latitude,
+                longitude: location.longitude
+            )
+            await syncStoriesUseCase.execute()
+
+            self.title = ""
+            self.content = ""
+            self.error = nil
         } catch {
             self.error = "No pudimos plantar tu Eco: \(error.localizedDescription)"
         }
