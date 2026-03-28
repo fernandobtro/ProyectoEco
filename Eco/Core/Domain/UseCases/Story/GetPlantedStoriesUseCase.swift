@@ -10,5 +10,6 @@
 import Foundation
 
 protocol GetPlantedStoriesUseCaseProtocol {
-    func execute() async throws -> [Story]
+    /// Loads one page of stories planted by the current user. Pagination (`page`, `pageSize + 1`, `hasMore`) is resolved in the implementation, not in the view model.
+    func execute(page: Int, pageSize: Int) async throws -> StoriesPage
 }
