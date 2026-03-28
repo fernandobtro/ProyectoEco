@@ -25,7 +25,12 @@ enum CollectionTab {
 enum CollectionState: Equatable {
     case idle
     case loading
-    case loaded(planted: [Story], discovered: [Story])
+    case loaded(
+        planted: [Story],
+        discovered: [Story],
+        plantedHasMore: Bool,
+        isLoadingMorePlanted: Bool
+    )
     case error(String)
 }
 
@@ -39,9 +44,15 @@ final class CollectionViewModel {
     private let deleteStoryUseCase: DeleteStoryUseCaseProtocol
     private let syncStoriesUseCase: SyncStoriesUseCase
 
+    /// Page size for planted list; use case fetches `pageSize + 1` rows to compute `hasMore`.
+    private static let plantedPageSize = 20
+
     // MARK: - Published state
     var selectedSegment: CollectionTab = .planted
     var state: CollectionState = .idle
+
+    /// Next `page` index for ``GetPlantedStoriesUseCaseProtocol.execute(page:pageSize:)`` after the initial refresh (starts at `0`, then `1`, …).
+    private var nextPlantedPageToFetch: Int = 0
 
     // MARK: - Init
     init(
@@ -62,24 +73,65 @@ final class CollectionViewModel {
         await refresh()
     }
 
-    /// Runs a full remote pull via sync, then loads planted and discovered stories in parallel.
+    /// Runs a full remote pull via sync, then loads the first planted page and the full discovered list (discovered is not paginated yet).
     func refresh() async {
         state = .loading
+        nextPlantedPageToFetch = 0
         await syncStoriesUseCase.executeWithFullRemotePull()
         do {
-            async let planted = getPlantedStoriesUseCase.execute()
+            async let plantedFirst = getPlantedStoriesUseCase.execute(page: 0, pageSize: Self.plantedPageSize)
             async let discovered = getDiscoveredStoriesUseCase.execute()
-            let (plantedStories, discoveredStories) = try await (planted, discovered)
-            state = .loaded(planted: plantedStories, discovered: discoveredStories)
+            let (plantedPage, discoveredStories) = try await (plantedFirst, discovered)
+            nextPlantedPageToFetch = 1
+            state = .loaded(
+                planted: plantedPage.items,
+                discovered: discoveredStories,
+                plantedHasMore: plantedPage.hasMore,
+                isLoadingMorePlanted: false
+            )
         } catch {
             state = .error(error.localizedDescription)
+        }
+    }
+
+    /// Loads the next planted page when the user scrolls near the end. Ignores overlapping calls while a load is in progress.
+    func loadMorePlantedIfNeeded() async {
+        guard case let .loaded(planted, discovered, plantedHasMore, loadingMore) = state,
+              plantedHasMore, !loadingMore else { return }
+
+        state = .loaded(
+            planted: planted,
+            discovered: discovered,
+            plantedHasMore: plantedHasMore,
+            isLoadingMorePlanted: true
+        )
+
+        do {
+            let page = try await getPlantedStoriesUseCase.execute(
+                page: nextPlantedPageToFetch,
+                pageSize: Self.plantedPageSize
+            )
+            nextPlantedPageToFetch += 1
+            state = .loaded(
+                planted: planted + page.items,
+                discovered: discovered,
+                plantedHasMore: page.hasMore,
+                isLoadingMorePlanted: false
+            )
+        } catch {
+            state = .loaded(
+                planted: planted,
+                discovered: discovered,
+                plantedHasMore: plantedHasMore,
+                isLoadingMorePlanted: false
+            )
         }
     }
 
     // MARK: - Deletion
     /// Deletes planted rows at the given offsets, triggers sync, then reloads both lists.
     func deletePlantedStories(at offsets: IndexSet) async {
-        guard case let .loaded(planted, _) = state else { return }
+        guard case let .loaded(planted, _, _, _) = state else { return }
 
         let ids = offsets.compactMap { index in
             planted.indices.contains(index) ? planted[index].id : nil
@@ -109,14 +161,14 @@ final class CollectionViewModel {
 
     // MARK: - Derived lists
     var plantedStories: [Story] {
-        guard case let .loaded(planted, _) = state else {
+        guard case let .loaded(planted, _, _, _) = state else {
             return []
         }
         return planted
     }
 
     var discoveredStories: [Story] {
-        guard case let .loaded(_, discovered) = state else {
+        guard case let .loaded(_, discovered, _, _) = state else {
             return []
         }
         return discovered
@@ -128,6 +180,12 @@ final class CollectionViewModel {
 
     var discoveredListItems: [StoryViewData] {
         discoveredStories.map { Self.listItem(for: $0) }
+    }
+
+    /// True while the next planted page is being fetched (scroll infinite).
+    var isLoadingMorePlanted: Bool {
+        guard case let .loaded(_, _, _, loadingMore) = state else { return false }
+        return loadingMore
     }
 
     // MARK: - Discovered map helpers

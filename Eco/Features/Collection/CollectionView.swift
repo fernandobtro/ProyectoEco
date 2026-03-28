@@ -128,7 +128,7 @@ struct CollectionView: View {
 
     private var plantedList: some View {
         List {
-            ForEach(viewModel.plantedListItems) { item in
+            ForEach(Array(viewModel.plantedListItems.enumerated()), id: \.element.id) { index, item in
                 Button {
                     #if DEBUG
                     print("[CollectionView] open planted detail id=\(item.id.uuidString)")
@@ -151,6 +151,21 @@ struct CollectionView: View {
                     }
                     .tint(Color.red)
                 }
+                .task(id: item.id) {
+                    let items = viewModel.plantedListItems
+                    guard !items.isEmpty, index == items.count - 1 else { return }
+                    await viewModel.loadMorePlantedIfNeeded()
+                }
+            }
+            if viewModel.isLoadingMorePlanted {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .tint(Color.theme.accent)
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
@@ -240,19 +255,21 @@ private struct IdentifiableStoryID: Identifiable, Equatable {
 
 // MARK: - Preview mocks
 private struct MockGetPlantedStoriesUseCaseForPreview: GetPlantedStoriesUseCaseProtocol {
-    func execute() async throws -> [Story] {
-        [
-            Story(
-                id: UUID(),
-                title: "Mi Eco",
-                content: "Historia creada por mí.",
-                authorID: "mock-uid",
-                latitude: 19.4326,
-                longitude: -99.1332,
-                isSynced: true,
-                updatedAt: Date()
-            )
-        ]
+    func execute(page: Int, pageSize: Int) async throws -> StoriesPage {
+        let sample = Story(
+            id: UUID(),
+            title: "Mi Eco",
+            content: "Historia creada por mí.",
+            authorID: "mock-uid",
+            latitude: 19.4326,
+            longitude: -99.1332,
+            isSynced: true,
+            updatedAt: Date()
+        )
+        if page == 0 {
+            return StoriesPage(items: [sample], hasMore: false)
+        }
+        return StoriesPage(items: [], hasMore: false)
     }
 }
 

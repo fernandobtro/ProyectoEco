@@ -17,6 +17,7 @@ final class GetDiscoveredStoriesUseCaseImpl: GetDiscoveredStoriesUseCaseProtocol
     }
     
     func execute() async throws -> [Story] {
+        // TODO: Paginate discovered stories via a relational model (e.g. UserStoryDiscovery). Current path uses `user.foundStories` in memory without paging.
         // En esta primera versión, devolvemos todas las historias encontradas del usuario actual.
         guard let user = try await userRepository.getCurrentUser() else {
             return []

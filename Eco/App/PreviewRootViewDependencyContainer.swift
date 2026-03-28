@@ -193,7 +193,9 @@ private struct PreviewLocalNotificationService: LocalNotificationServiceProtocol
 }
 
 private struct PreviewGetPlantedStoriesUseCase: GetPlantedStoriesUseCaseProtocol {
-    func execute() async throws -> [Story] { [] }
+    func execute(page: Int, pageSize: Int) async throws -> StoriesPage {
+        StoriesPage(items: [], hasMore: false)
+    }
 }
 
 private struct PreviewGetDiscoveredStoriesUseCase: GetDiscoveredStoriesUseCaseProtocol {
