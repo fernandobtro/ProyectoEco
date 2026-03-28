@@ -2,6 +2,8 @@
 //  LocationServiceProtocols.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 27/02/26.
 //
 
@@ -16,14 +18,20 @@ protocol LocationServiceProtocol {
     
     /// Flujo reactivo que emite la ubicación actual para múltiples interesados (replay del último valor para nuevos suscriptores)
     var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
+
+    /// Última coordenada del GPS (`nil` hasta el primer `didUpdateLocations`).
+    var lastKnownCoordinate: CLLocationCoordinate2D? { get }
     
     var storiesUpdatePublisher: AnyPublisher<Void, Never> { get }
     
     /// El "Interruptor" para apagar el radar a voluntad
     var isMonitoringEnabled: Bool { get }
     
+    /// Solicita permisos de "Cuando se use la app"
+    func requestWhenInUse() async throws
+    
     /// Solicita permisos de "Siempre" para que funcione en segundo plano
-    func requestPermission() async throws
+    func requestAlways() async throws
     
     /// Inicia la vigilancia de las historias cercanas (Geofencing)
     func startMonitoring(stories: [Story])

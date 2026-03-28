@@ -2,6 +2,8 @@
 //  RemoteStoryDTO.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 17/03/26.
 //
 
@@ -12,7 +14,7 @@ struct RemoteStoryDTO {
     let remoteId: String
     let title: String
     let content: String
-    let authorId: UUID
+    let authorId: String
     let latitude: Double
     let longitude: Double
     let updatedAt: Date
@@ -24,8 +26,8 @@ struct RemoteStoryDTO {
             let title = data["title"] as? String,
             let content = data["content"] as? String,
             let authorIdString = data["authorId"] as? String,
-            let latitude = data["latitude"] as? Double,
-            let longitude = data["longitude"] as? Double,
+            let latitude = Self.double(from: data["latitude"]),
+            let longitude = Self.double(from: data["longitude"]),
             let updatedAtTimestamp = data["updatedAt"] as? Timestamp
         else {
             return nil
@@ -34,7 +36,7 @@ struct RemoteStoryDTO {
         self.remoteId = document.documentID
         self.title = title
         self.content = content
-        self.authorId = UUID(uuidString: authorIdString) ?? UUID()
+        self.authorId = authorIdString
         self.latitude = latitude
         self.longitude = longitude
         self.updatedAt = updatedAtTimestamp.dateValue()
@@ -43,6 +45,37 @@ struct RemoteStoryDTO {
             self.deletedAt = deletedAtTimestamp.dateValue()
         } else {
             self.deletedAt = nil
+        }
+    }
+
+    /// Test and tooling initializer (avoids `DocumentSnapshot`).
+    internal init(
+        remoteId: String,
+        title: String,
+        content: String,
+        authorId: String,
+        latitude: Double,
+        longitude: Double,
+        updatedAt: Date,
+        deletedAt: Date? = nil
+    ) {
+        self.remoteId = remoteId
+        self.title = title
+        self.content = content
+        self.authorId = authorId
+        self.latitude = latitude
+        self.longitude = longitude
+        self.updatedAt = updatedAt
+        self.deletedAt = deletedAt
+    }
+
+    private static func double(from value: Any?) -> Double? {
+        switch value {
+        case let doubleValue as Double: return doubleValue
+        case let floatValue as Float: return Double(floatValue)
+        case let intValue as Int: return Double(intValue)
+        case let number as NSNumber: return number.doubleValue
+        default: return nil
         }
     }
 }

@@ -2,6 +2,8 @@
 //  RegisterView.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 
@@ -12,34 +14,74 @@ struct RegisterView: View {
     let onLoginTap: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            TextField("Email", text: $viewModel.email)
-                .textFieldStyle(.roundedBorder)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.emailAddress)
-
-            SecureField("Password", text: $viewModel.password)
-                .textFieldStyle(.roundedBorder)
-
-            if viewModel.isLoading {
-                ProgressView()
+        
+        ZStack {
+            Color.theme.accent
+                .ignoresSafeArea()
+                .onTapGesture {
+                    EcoKeyboard.dismiss()
+                }
+            VStack {
+                Circle()
+                    .fill(Color.theme.primaryText)
+                    .frame(width: 450, height: 450)
+                    .offset(y: -250)
+                    .overlay(
+                        Image("EcoLogoLightBack")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .offset(y: -90)
+                    )
+                Spacer()
             }
+            .ignoresSafeArea()
 
-            Button("Crear cuenta") {
-                viewModel.register()
-            }
+            ScrollView {
+                VStack(spacing: 20) {
+                    Spacer().frame(height: 100)
 
-            Button("Ya tengo cuenta") {
-                onLoginTap()
-            }
-            .font(.footnote)
+                    Text("Regístrate")
+                        .font(.poppins(.bold, size: 26))
+                        .foregroundStyle(Color.theme.primaryText)
+                    VStack(spacing: 16) {
+                        EcoTextField(
+                            "Correo Electrónico",
+                            text: $viewModel.email,
+                            textInputAutocapitalization: .never,
+                            keyboardType: .emailAddress,
+                            textContentType: .emailAddress
+                        )
+                        EcoSecureField("Contraseña", text: $viewModel.password)
 
-            if let error = viewModel.errorMessage {
-                Text(error)
-                    .foregroundStyle(.red)
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color.theme.primaryText))
+                        }
+
+                        Button("Crear cuenta") {
+                            viewModel.register()
+                        }
+                        .buttonStyle(EcoButtonStyle(backgroundColor: Color.theme.primaryComponent))
+                        .padding(.top, 10)
+
+                        Button("Ya tengo cuenta") {
+                            onLoginTap()
+                        }
+                        .buttonStyle(EcoButtonStyle(backgroundColor: Color.theme.primaryComponent))
+
+                        if let error = viewModel.errorMessage {
+                            Text(error)
+                                .foregroundStyle(.red)
+                        }
+                    }
+
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal, 40)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
-        .padding()
     }
 }
 

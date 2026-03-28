@@ -2,7 +2,16 @@
 //  StoryEntity.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 02/03/26.
+//
+//  Purpose: SwiftData entity for local story persistence with full synchronization state tracking.
+//
+//  Responsibilities:
+//  - Store spatial (coordinates) and textual data for stories planted or discovered.
+//  - Maintain sync metadata (remoteId, syncStatus, updatedAt) to coordinate with Firestore.
+//  - Support logical deletion (soft delete) via 'deletedAt' to ensure cleanup across devices.
 //
 
 import Foundation
@@ -14,7 +23,7 @@ class StoryEntity {
     
     var title: String
     var content: String
-    var authorID: UUID
+    var authorID: String
     var latitude: Double
     var longitude: Double
     
@@ -23,7 +32,7 @@ class StoryEntity {
     var updatedAt: Date
     var deletedAt: Date?
     
-    init(id: UUID, title: String, content: String, authorID: UUID, latitude: Double, longitude: Double, remoteId: String? = nil, syncStatus: String = "pendingCreate", updatedAt: Date = Date(), deletedAt: Date? = nil) {
+    init(id: UUID, title: String, content: String, authorID: String, latitude: Double, longitude: Double, remoteId: String? = nil, syncStatus: String = "pendingCreate", updatedAt: Date = Date(), deletedAt: Date? = nil) {
         self.id = id
         self.title = title
         self.content = content

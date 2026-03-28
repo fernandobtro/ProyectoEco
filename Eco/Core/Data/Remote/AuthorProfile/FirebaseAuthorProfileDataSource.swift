@@ -2,6 +2,8 @@
 //  FirebaseAuthorProfileDataSource.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 
@@ -13,16 +15,16 @@ final class FirebaseAuthorProfileDataSource {
     private let collectionName = "authorProfiles"
 
     func create(profile: AuthorProfile) async throws {
-        let db = Firestore.firestore()
-        try await db
+        let database = Firestore.firestore()
+        try await database
             .collection(collectionName)
             .document(profile.id)
             .setData(encode(profile), merge: false)
     }
 
     func get(by id: String) async throws -> AuthorProfile {
-        let db = Firestore.firestore()
-        let snapshot = try await db
+        let database = Firestore.firestore()
+        let snapshot = try await database
             .collection(collectionName)
             .document(id)
             .getDocument()
@@ -55,8 +57,8 @@ final class FirebaseAuthorProfileDataSource {
     }
 
     func save(_ profile: AuthorProfile) async throws {
-        let db = Firestore.firestore()
-        try await db
+        let database = Firestore.firestore()
+        try await database
             .collection(collectionName)
             .document(profile.id)
             .setData(encode(profile), merge: true)
@@ -93,4 +95,3 @@ final class FirebaseAuthorProfileDataSource {
         )
     }
 }
-

@@ -2,11 +2,24 @@
 //  StoryPersistenceMapper.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
+//  Created by Fernando Buenrostro on 02/03/26.
+//
+//  Purpose: Convert between SwiftData StoryEntity rows and domain "Story" values for repositories.
+//
+//  Responsibilities:
+//  - Map fields and derive isSynced from sync status and soft-delete state.
+//  - Create new pending rows or update existing ones, adjusting syncStatus for the sync pipeline.
+//
 
 import Foundation
 
 enum StoryPersistenceMapper {
 
+    // MARK: - Domain
+
+    /// Maps a stored row to domain. `isSynced` is true only when sync status is `.synced` and `deletedAt` is nil.
     static func toDomain(_ entity: StoryEntity) -> Story {
         Story(
             id: entity.id,
@@ -15,30 +28,32 @@ enum StoryPersistenceMapper {
             authorID: entity.authorID,
             latitude: entity.latitude,
             longitude: entity.longitude,
-            isSynced: entity.syncStatus == "synced" && entity.deletedAt == nil
+            isSynced: SyncStatus(rawValue: entity.syncStatus) == .synced && entity.deletedAt == nil,
+            updatedAt: entity.updatedAt
         )
     }
 
-    /// Crea o actualiza una `StoryEntity` a partir de un `Story` de dominio.
-    /// - Nota: La lógica de sync (create/update) se resuelve aquí en función de si existe o no la entidad previa.
+    // MARK: - Persistence
+    /// Inserts a new pending-create entity or updates an existing row. When the row was previously `.synced`, sets `pendingUpdate` so the worker pushes changes.
+    ///
+    /// - Parameter existing: Pass the fetched entity for an update, or `nil` to create a new local row.
+    /// - Returns: The same `existing` instance when updating, or a new `StoryEntity` for creates.
+    @discardableResult
     static func toEntity(_ story: Story, existing: StoryEntity?) -> StoryEntity {
         if let existing {
-            // UPDATE sobre una entidad que ya existe en la base local.
             existing.title = story.title
             existing.content = story.content
             existing.latitude = story.latitude
             existing.longitude = story.longitude
-            existing.updatedAt = Date()
+            existing.updatedAt = story.updatedAt
 
-            // Si ya estaba sincronizada, marcamos que requiere actualización remota.
-            if existing.syncStatus == "synced" {
-                existing.syncStatus = "pendingUpdate"
+            if SyncStatus(rawValue: existing.syncStatus) == .synced {
+                existing.syncStatus = SyncStatus.pendingUpdate.rawValue
             }
 
             return existing
         } else {
-            // CREATE de una nueva historia local pendiente de subir.
-            return StoryEntity(
+                return StoryEntity(
                 id: story.id,
                 title: story.title,
                 content: story.content,
@@ -46,8 +61,8 @@ enum StoryPersistenceMapper {
                 latitude: story.latitude,
                 longitude: story.longitude,
                 remoteId: nil,
-                syncStatus: "pendingCreate",
-                updatedAt: Date(),
+                syncStatus: SyncStatus.pendingCreate.rawValue,
+                updatedAt: story.updatedAt,
                 deletedAt: nil
             )
         }

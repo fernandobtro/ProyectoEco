@@ -2,74 +2,241 @@
 //  RootView.swift
 //  Eco
 //
-//  Created by Fernando Buenrostro on 15/03/26.
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
+//  Purpose: Main shell after sign-in, tabs, sync, and entry points from notifications or deep links.
+//
+//  Responsibilities:
+//  - Host the map, collection, story creation, profile, and notifications in one tab bar.
+//  - Surface sync state, handle story and map deep links, and wire the map router into the map tab.
 //
 
 import SwiftUI
+import UserNotifications
+import CoreLocation
 
 struct RootView: View {
-    let container: AppDIContainer
+    let container: any RootViewDependencyProviding
 
+    // MARK: - Navigation State
     @State private var selectedTab: TabBar = .map
     @State private var showProfile = false
+    @State private var showNotifications = false
+    @State private var showNotificationsOnboarding = false
+    @State private var showAlwaysLocationUpgrade = false
     @State private var mapViewModel: MapViewModel
     @State private var mapRouter: MapRouter
     @State private var collectionViewModel: CollectionViewModel
+    @State private var syncStateService: SyncStateService
 
-    init(container: AppDIContainer) {
+    // MARK: - Persistent Settings
+    /// Local persistence to remember if the user has already interacted with the Welcoming flow.
+    @AppStorage("eco.hasSeenNotificationsOnboarding") private var hasSeenNotificationsOnboarding = false
+    @AppStorage("eco.hasRequestedAlwaysLocationUpgrade") private var hasRequestedAlwaysLocationUpgrade = false
+
+    /// Access to global router to handle deep links.
+    private var appRouter: AppRouter { AppRouter.shared }
+
+    // MARK: - Initializer
+    init(container: any RootViewDependencyProviding) {
         self.container = container
         _mapViewModel = State(initialValue: container.makeMapViewModel())
         _mapRouter = State(initialValue: container.makeMapRouter())
         _collectionViewModel = State(initialValue: container.makeCollectionViewModel())
+        _syncStateService = State(initialValue: container.makeSyncStateService())
     }
 
     var body: some View {
         @Bindable var router = mapRouter
         
         ZStack {
-            // 1. Capa de navegación (Fondo)
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            // Opcional: Si quieres que el mapa cubra toda la pantalla detrás del notch
-            // .ignoresSafeArea()
-            
-            // 2. Capa de tu UI Personalizada (Frente)
+
             VStack {
-                // Barra superior empujada a la derecha
                 HStack {
-                    Spacer() // Esto empuja tu TopFloatingBar a la esquina
-                    
+                    SyncIndicatorView(syncState: syncStateService)
+                    Spacer()
                     TopFloatingBar { tappedItem in
                         switch tappedItem {
                         case .profile:
                             showProfile = true
                         case .notification:
-                            print("Ir a notificaciones")
+                            showNotifications = true
                         }
                     }
                 }
                 
-                Spacer() // Separa la barra de arriba y la de abajo
+                Spacer()
                 
-                // Barra inferior
                 CustomTabBar(selectedTab: $selectedTab) {
                     mapRouter.navigateToCreateStory()
                 }
             }
-        }
-        .sheet(isPresented: $showProfile) {
-            container.makeProfileView()
-        }
-        .sheet(item: $router.sheetDestination, onDismiss: {
-            Task { await mapViewModel.onAppear() }
-        }) { destination in
-            router.view(for: destination)
-        }
-        .onChange(of: selectedTab) { _, newValue in
-            if newValue == .map {
-                Task { await mapViewModel.onAppear() }
+            // Keep chrome above tab content and tappable after sheets / system UI (e.g. screenshot flash).
+            .zIndex(10)
+            .allowsHitTesting(true)
+
+            if showNotificationsOnboarding {
+                NotificationsOnboardingView(
+                    onAllow: {
+                        Task {
+                            let center = UNUserNotificationCenter.current()
+                            _ = try? await center.requestAuthorization(options: [.alert, .badge, .sound])
+                            await MainActor.run {
+                                hasSeenNotificationsOnboarding = true
+                                withAnimation(.spring()) {
+                                    showNotificationsOnboarding = false
+                                }
+                            }
+                        }
+                    },
+                    onSkip: {
+                        hasSeenNotificationsOnboarding = true
+                        withAnimation(.spring()) {
+                            showNotificationsOnboarding = false
+                        }
+                    }
+                )
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
+            if selectedTab == .map && showAlwaysLocationUpgrade {
+                VStack {
+                    Spacer()
+                    AlwaysLocationUpgradeView(
+                        onAllow: {
+                            hasRequestedAlwaysLocationUpgrade = true
+                            Task {
+                                try? await container.makeLocationService().requestAlways()
+                                await MainActor.run {
+                                    withAnimation(.spring()) {
+                                        showAlwaysLocationUpgrade = false
+                                    }
+                                }
+                            }
+                        },
+                        onSkip: {
+                            hasRequestedAlwaysLocationUpgrade = true
+                            withAnimation(.spring()) {
+                                showAlwaysLocationUpgrade = false
+                            }
+                        }
+                    )
+                    .padding(.bottom, 120)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
+        .alert("Error de sincronización", isPresented: Binding(
+            get: { if case .error = syncStateService.state { true } else { false } },
+            set: { if !$0 { syncStateService.clearError() } }
+        )) {
+            Button("OK") { }
+        } message: {
+            if case .error(let msg) = syncStateService.state {
+                Text(msg)
+            }
+        }
+        .sheet(isPresented: $showProfile) {
+            container.makeProfileView(
+                onClose: {
+                    showProfile = false
+                }
+            )
+        }
+        .sheet(isPresented: $showNotifications) {
+            NotificationsView(
+                viewModel: container.makeNotificationsViewModel(),
+                onItemTap: { _ in
+                    selectedTab = .map
+                    showNotifications = false
+                }
+            )
+        }
+        .sheet(
+            item: $router.sheetDestination,
+            onDismiss: {
+                EcoKeyboard.dismiss()
+                if mapRouter.consumeStoryReaderSheetDismissed() {
+                    mapViewModel.recordMapReaderDismissed()
+                }
+                if let planted = mapRouter.consumeRecentPlanting() {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedTab = .map
+                    }
+                    mapViewModel.queuePlantingAnimation(
+                        coordinate: planted.coordinate,
+                        storyId: planted.storyId
+                    )
+                }
+                Task { await mapViewModel.onAppear() }
+            },
+            content: { destination in
+                router.view(for: destination)
+                    .id(destination.id)
+            }
+        )
+        .sheet(
+            item: Binding(
+                get: { appRouter.activeStoryID.map { IdentifiableString(value: $0) } },
+                set: { if $0 == nil { appRouter.dismissStoryDetail() } }
+            ),
+            onDismiss: { appRouter.dismissStoryDetail() },
+            content: { item in
+                NavigationStack {
+                    StoryDetailFromDeepLinkView(
+                        storyId: item.value,
+                        resolveStory: { id in await container.resolveStoryIdForDeepLink(id) },
+                        makeDetail: { uuid in
+                            AnyView(
+                                StoryDetailView(
+                                    viewModel: container.makeStoryDetailViewModel(storyId: uuid),
+                                    onDelete: nil
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+        )
+        .onAppear {
+            if let id = appRouter.consumePendingStoryID() {
+                appRouter.handle(.storyDetail(id: id))
+            }
+            if appRouter.consumePendingOpenMap() {
+                selectedTab = .map
+            }
+            if !hasSeenNotificationsOnboarding {
+                showNotificationsOnboarding = true
+            }
+            evaluateAlwaysLocationUpgradePrompt()
+        }
+        .onChange(of: appRouter.openMapRequested) { _, requested in
+            if requested {
+                selectedTab = .map
+                appRouter.clearOpenMapRequest()
+            }
+        }
+        .onChange(of: selectedTab) { _, newValue in
+            switch newValue {
+            case .map:
+                Task { await mapViewModel.onAppear() }
+                evaluateAlwaysLocationUpgradePrompt()
+            case .collection:
+                Task { await collectionViewModel.onAppear() }
+            }
+        }
+    }
+
+    private func evaluateAlwaysLocationUpgradePrompt() {
+        guard !hasRequestedAlwaysLocationUpgrade else {
+            showAlwaysLocationUpgrade = false
+            return
+        }
+
+        let status = CLLocationManager().authorizationStatus
+        showAlwaysLocationUpgrade = (status == .authorizedWhenInUse)
     }
 
     @ViewBuilder
@@ -84,10 +251,15 @@ struct RootView: View {
             NavigationStack {
                 CollectionView(
                     viewModel: collectionViewModel,
-                    makeDetailView: { id in
-                        StoryDetailView(
-                            viewModel: container.makeStoryDetailViewModel(storyId: id)
-                        )
+                    makeDetailViewModel: { id in
+                        container.makeStoryDetailViewModel(storyId: id)
+                    },
+                    onPlantFirstStory: {
+                        selectedTab = .map
+                        mapRouter.navigateToCreateStory()
+                    },
+                    onGoToMap: {
+                        selectedTab = .map
                     }
                 )
                     .toolbar(.hidden, for: .navigationBar)
@@ -96,6 +268,8 @@ struct RootView: View {
     }
 }
 
+#if DEBUG
 #Preview {
-    RootView(container: AppDIContainer())
+    RootView(container: PreviewRootViewDependencyContainer.shared)
 }
+#endif

@@ -2,6 +2,8 @@
 //  CustomTabBar.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 15/03/26.
 //
 
@@ -12,80 +14,68 @@ struct CustomTabBar: View {
     @Binding var selectedTab: TabBar
     var onPlusButtonTap: () -> Void
     
-    // Propiedades para la animación de la cápsula (del archivo 1)
     @Namespace private var animation
     @State private var tabLocation: CGRect = .zero
     
     var body: some View {
-        ZStack(alignment: .top) {
-            // 1. Fondo de la barra (el contenedor oscuro)
-            RoundedRectangle(cornerRadius: 35)
-                .fill(Color.theme.accent) // Tu AccentColor de Assets
-                .frame(height: 70)
-                .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
-                .padding(.horizontal, 20)
-            
-            // 2. Botones de navegación
+        HStack(spacing: 12) {
             HStack(spacing: 0) {
-                tabButton(for: .map)
-                
-                // Espacio transparente para que los botones no choquen con el "+"
-                Color.clear.frame(width: 70)
-
-                tabButton(for: .collection)
+                tabCustomButton(for: .map)
+                tabCustomButton(for: .collection)
             }
-            .padding(.horizontal, 35)
+            .padding(.horizontal, 10)
             .frame(height: 70)
-            // Define el espacio de coordenadas para que matchedGeometry sepa dónde moverse
-            .coordinateSpace(.named("TABBARVIEW"))
+            .background {
+                RoundedRectangle(cornerRadius: 35)
+                    .fill(Color.theme.accent)
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+            }
+            .coordinateSpace(name: "TABBARVIEW")
             
-            // 3. Botón flotante central
-            plusButton
+            customButton
         }
-        // Animación suave para los cambios de estado (incluyendo la aparición del texto)
-        .animation(.smooth(duration: 0.3, extraBounce: 0), value: selectedTab)
+        .padding(.horizontal, 20)
     }
     
-    // MARK: - Componentes
-    
-    private var plusButton: some View {
+    private var customButton: some View {
         Button(action: onPlusButtonTap) {
             ZStack {
                 Circle()
-                    .fill(Color.theme.primaryComponent) // Tu color verde claro
-                    .frame(width: 62, height: 62)
-                    .shadow(color: Color.theme.primaryComponent.opacity(0.3), radius: 8, x: 0, y: 4)
-                
-                Image(systemName: "plus")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(.accent)
+                    .fill(Color.theme.accent)
+                    .frame(width: 72, height: 72)
+                    .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+
+                Image("PlusButton")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 42, height: 42)
             }
+            .contentShape(Circle())
         }
-        // Posicionamiento arriba de la barra
-        .offset(y: -28)
+        .buttonStyle(.plain)
     }
     
-    private func tabButton(for tab: TabBar) -> some View {
+    private func tabCustomButton(for tab: TabBar) -> some View {
         Button {
-            selectedTab = tab
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                selectedTab = tab
+            }
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: tab.rawValue)
                     .font(.system(size: 20))
-                
-                            }
-           
-            .foregroundStyle(selectedTab == tab ? Color.theme.accent : .primaryComponent)
+                    .scaleEffect(selectedTab == tab ? 1.2 : 1.0)
+            }
+            .foregroundStyle(selectedTab == tab ? Color.theme.exploreBackground : .white.opacity(0.72))
             .padding(.vertical, 16)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
             .contentShape(.rect)
             .background {
                 if selectedTab == tab {
-                    // La cápsula que "viaja" entre botones
                     Capsule()
-                        .fill(Color.theme.primaryComponent)
-                        .onGeometryChange(for: CGRect.self, of: {
-                            $0.frame(in: .named("TABBARVIEW"))
+                        .fill(Color.white.opacity(0.22))
+                        .onGeometryChange(for: CGRect.self, of: { proxy in
+                            proxy.frame(in: .named("TABBARVIEW"))
                         }, action: { newValue in
                             tabLocation = newValue
                         })

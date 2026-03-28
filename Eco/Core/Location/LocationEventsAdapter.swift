@@ -2,6 +2,8 @@
 //  LocationEventsAdapter.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
@@ -30,7 +32,7 @@ final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDi
     }
 
     func requestPermission() async {
-        try? await locationService.requestPermission()
+        try? await locationService.requestWhenInUse()
     }
 
     func didEnterStoryRegion(id: UUID) {
@@ -39,7 +41,7 @@ final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDi
 
     func didUpdateLocation(latitude: Double, longitude: Double) {
         Task {
-            await discoverNearbyStoriesUseCase.refreshNearbyStories(latitude: latitude, longitude: longitude)
+            await discoverNearbyStoriesUseCase.onUserLocationUpdated(latitude: latitude, longitude: longitude)
             let nearbyStoryIDs = discoverNearbyStoriesUseCase.currentNearbyStoryIDs()
             for storyId in nearbyStoryIDs {
                 await trackProgressOnStoryEntryUseCase.execute(storyId: storyId)

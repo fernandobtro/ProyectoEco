@@ -2,6 +2,8 @@
 //  Story.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 27/02/26.
 //
 
@@ -11,8 +13,10 @@ struct Story: Identifiable, Equatable {
     let id: UUID
     let title: String
     let content: String
-    let authorID: UUID
+    let authorID: String
     let latitude: Double
     let longitude: Double
     let isSynced: Bool
+    /// Última modificación; clave para orden, conflictos y debugging.
+    let updatedAt: Date
 }

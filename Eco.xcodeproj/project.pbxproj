@@ -10,9 +10,21 @@
 		3978010D2F68FC5700CAC499 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 3978010C2F68FC5700CAC499 /* FirebaseAuth */; };
 		3978010F2F68FC5700CAC499 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3978010E2F68FC5700CAC499 /* FirebaseCore */; };
 		397801112F68FC5700CAC499 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 397801102F68FC5700CAC499 /* FirebaseFirestore */; };
+		397801182F6B123400CAC499 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 397801172F6B123400CAC499 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		396A314C2F760073001B02D8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 39ACEFB02F501F7400C56F04 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 39ACEFB72F501F7400C56F04;
+			remoteInfo = Eco;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		396A31482F760073001B02D8 /* EcoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EcoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		39ACEFB82F501F7400C56F04 /* Eco.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eco.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -27,6 +39,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		396A31492F760073001B02D8 /* EcoTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EcoTests;
+			sourceTree = "<group>";
+		};
 		39ACEFBA2F501F7400C56F04 /* Eco */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -38,6 +55,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		396A31452F760073001B02D8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		39ACEFB52F501F7400C56F04 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,6 +69,7 @@
 				3978010F2F68FC5700CAC499 /* FirebaseCore in Frameworks */,
 				3978010D2F68FC5700CAC499 /* FirebaseAuth in Frameworks */,
 				397801112F68FC5700CAC499 /* FirebaseFirestore in Frameworks */,
+				397801182F6B123400CAC499 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				39ACEFBA2F501F7400C56F04 /* Eco */,
+				396A31492F760073001B02D8 /* EcoTests */,
 				39ACEFB92F501F7400C56F04 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				39ACEFB82F501F7400C56F04 /* Eco.app */,
+				396A31482F760073001B02D8 /* EcoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +97,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		396A31472F760073001B02D8 /* EcoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 396A314E2F760073001B02D8 /* Build configuration list for PBXNativeTarget "EcoTests" */;
+			buildPhases = (
+				396A31442F760073001B02D8 /* Sources */,
+				396A31452F760073001B02D8 /* Frameworks */,
+				396A31462F760073001B02D8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				396A314D2F760073001B02D8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				396A31492F760073001B02D8 /* EcoTests */,
+			);
+			name = EcoTests;
+			packageProductDependencies = (
+			);
+			productName = EcoTests;
+			productReference = 396A31482F760073001B02D8 /* EcoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		39ACEFB72F501F7400C56F04 /* Eco */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 39ACEFC32F501F7500C56F04 /* Build configuration list for PBXNativeTarget "Eco" */;
@@ -91,6 +141,7 @@
 				3978010C2F68FC5700CAC499 /* FirebaseAuth */,
 				3978010E2F68FC5700CAC499 /* FirebaseCore */,
 				397801102F68FC5700CAC499 /* FirebaseFirestore */,
+				397801172F6B123400CAC499 /* GoogleSignIn */,
 			);
 			productName = Eco;
 			productReference = 39ACEFB82F501F7400C56F04 /* Eco.app */;
@@ -106,6 +157,10 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					396A31472F760073001B02D8 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 39ACEFB72F501F7400C56F04;
+					};
 					39ACEFB72F501F7400C56F04 = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -122,6 +177,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3978010B2F68FC5700CAC499 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				397801162F6B123400CAC499 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 39ACEFB92F501F7400C56F04 /* Products */;
@@ -129,11 +185,19 @@
 			projectRoot = "";
 			targets = (
 				39ACEFB72F501F7400C56F04 /* Eco */,
+				396A31472F760073001B02D8 /* EcoTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		396A31462F760073001B02D8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		39ACEFB62F501F7400C56F04 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -165,6 +229,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		396A31442F760073001B02D8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		39ACEFB42F501F7400C56F04 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -174,7 +245,57 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		396A314D2F760073001B02D8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 39ACEFB72F501F7400C56F04 /* Eco */;
+			targetProxy = 396A314C2F760073001B02D8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		396A314F2F760073001B02D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7XF45256S3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fernando.EcoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Eco.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Eco";
+			};
+			name = Debug;
+		};
+		396A31502F760073001B02D8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7XF45256S3;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fernando.EcoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Eco.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Eco";
+			};
+			name = Release;
+		};
 		39ACEFC12F501F7500C56F04 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -301,6 +422,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Eco/Eco.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7XF45256S3;
@@ -337,6 +459,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Eco/Eco.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 7XF45256S3;
@@ -371,6 +494,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		396A314E2F760073001B02D8 /* Build configuration list for PBXNativeTarget "EcoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				396A314F2F760073001B02D8 /* Debug */,
+				396A31502F760073001B02D8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		39ACEFB32F501F7400C56F04 /* Build configuration list for PBXProject "Eco" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -400,6 +532,14 @@
 				minimumVersion = 12.11.0;
 			};
 		};
+		397801162F6B123400CAC499 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -417,6 +557,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3978010B2F68FC5700CAC499 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		397801172F6B123400CAC499 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 397801162F6B123400CAC499 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

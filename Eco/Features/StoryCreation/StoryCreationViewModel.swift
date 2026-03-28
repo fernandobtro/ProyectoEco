@@ -2,6 +2,8 @@
 //  StoryCreationViewModel.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
@@ -21,6 +23,7 @@ class StoryCreationViewModel {
     var isPlanting: Bool = false
     var error: String?
     var lastLocation: CLLocationCoordinate2D?
+    var lastPlantedStoryId: UUID?
     
     private let plantUseCase: PlantStoryUseCaseProtocol
     private let getLocationUseCase: GetCurrentLocationForPlantingUseCaseProtocol
@@ -66,7 +69,7 @@ class StoryCreationViewModel {
         defer { isPlanting = false }
         
         do {
-            try await plantUseCase.execute(
+            lastPlantedStoryId = try await plantUseCase.execute(
                 title: cleanTitle,
                 content: cleanContent,
                 latitude: location.latitude,

@@ -2,6 +2,8 @@
 //  OnboardingNicknameView.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 17/03/26.
 //
 
@@ -10,30 +12,55 @@ import SwiftUI
 
 struct OnboardingNicknameView: View {
     @State private var nickname: String = ""
-    var onFinished: () -> Void
-    // Aquí inyectarías tu repositorio o use case para guardar el nombre
-
+    var onFinish: (String) -> Void
+    
     var body: some View {
-        VStack(spacing: 40) {
-            Text("¿Cómo te llaman\n por aquí?")
-                .font(.largeTitle.bold())
-                .multilineTextAlignment(.center)
+        ZStack {
+            Color.theme.primaryComponent
+                .ignoresSafeArea()
+                .onTapGesture {
+                    EcoKeyboard.dismiss()
+                }
 
-            TextField("Tu nombre o apodo...", text: $nickname)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal, 40)
+            ScrollView {
+                VStack(spacing: 40) {
+                    Text("¿Cómo te llaman\n por aquí?")
+                        .font(.poppins(.bold, size: 32))
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(Color.theme.accent)
 
-            Button("Entrar al mapa") {
-                // 1. Guardar en LocalSessionRepository
-                // 2. (Opcional) Guardar en Firestore para el perfil remoto
-                onFinished()
+                    TextField(
+                        "",
+                        text: $nickname,
+                        prompt: Text("Tu nombre o apodo...")
+                            .foregroundStyle(Color.theme.secondaryText.opacity(0.6))
+                    )
+                        .font(.poppins(.medium, size: 18))
+                        .padding()
+                        .foregroundStyle(Color.theme.secondaryText)
+                        .background(Color.white.opacity(0.95))
+                        .cornerRadius(12)
+                        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .padding(.horizontal, 40)
+
+                    Button("Entrar al mapa") {
+                        EcoKeyboard.dismiss()
+                        onFinish(nickname)
+                    }
+                    .buttonStyle(EcoButtonStyle(backgroundColor: Color.theme.accent, isEnabled: !nickname.isEmpty))
+                    .disabled(nickname.isEmpty)
+                    .padding(.horizontal, 40)
+
+                    Spacer(minLength: 80)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(nickname.count < 3)
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 }
 
 #Preview {
-    OnboardingNicknameView(onFinished: {})
+    OnboardingNicknameView { _ in }
 }

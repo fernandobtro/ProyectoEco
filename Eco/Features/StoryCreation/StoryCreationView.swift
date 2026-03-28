@@ -2,37 +2,38 @@
 //  StoryCreationView.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 
-import SwiftUI
-import MapKit
 import CoreLocation
+import MapKit
+import SwiftUI
+
+private enum StoryCreationFocusedField: Hashable {
+    case title
+    case content
+}
 
 struct StoryCreationView: View {
     @Bindable var viewModel: StoryCreationViewModel
     @Environment(\.dismiss) var dismiss
-    
-    // Control de la cámara del mapa
+    var onPlantingSuccess: ((CLLocationCoordinate2D, UUID) -> Void)?
+
     @State private var mapPosition: MapCameraPosition = .automatic
-    
-    // Control del teclado
-    @FocusState private var isInputActive: Bool
+    @FocusState private var focusedField: StoryCreationFocusedField?
 
     var body: some View {
         ZStack {
-            // 1. El Lienzo (Fondo)
             Color.theme.accent
                 .ignoresSafeArea()
-                // Si tocas el fondo, se cierra el teclado
                 .onTapGesture {
-                    isInputActive = false
+                    focusedField = nil
+                    EcoKeyboard.dismiss()
                 }
-            
-            // 2. El Esqueleto
-            VStack(spacing: 24) {
-                
-                // Botón de cerrar superior derecho
+
+            VStack(spacing: 0) {
                 HStack {
                     Spacer()
                     Button(action: { dismiss() }) {
@@ -41,120 +42,74 @@ struct StoryCreationView: View {
                             .foregroundStyle(Color.theme.primaryText.opacity(0.8))
                     }
                 }
-                
-                // Título
-                Text("¿Qué historia vive aquí?")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.theme.primaryText)
-                    .multilineTextAlignment(.center)
-                
-                // 3. Mapa Circular con Radio
-                if let location = viewModel.lastLocation {
-                    Map(position: $mapPosition) {
-                        MapCircle(center: location, radius: 50)
-                            .foregroundStyle(Color.theme.primaryComponent.opacity(0.4))
-                            .mapOverlayLevel(level: .aboveRoads)
-                        
-                        Marker("Tú", coordinate: location)
-                            .tint(Color.theme.primaryComponent)
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            Text("¿Qué historia vive aquí?")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundStyle(Color.theme.primaryText)
+                                .multilineTextAlignment(.center)
+
+                            if let location = viewModel.lastLocation {
+                                Map(position: $mapPosition) {
+                                    MapCircle(center: location, radius: 50)
+                                        .foregroundStyle(Color.theme.primaryComponent.opacity(0.4))
+                                        .mapOverlayLevel(level: .aboveRoads)
+
+                                    Marker("Tú", coordinate: location)
+                                        .tint(Color.theme.primaryComponent)
+                                }
+                                .frame(width: 180, height: 180)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.theme.primaryText, lineWidth: 3))
+                                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+                                .onAppear {
+                                    mapPosition = .region(MKCoordinateRegion(center: location, latitudinalMeters: 150, longitudinalMeters: 150))
+                                }
+                                .onTapGesture {
+                                    focusedField = nil
+                                    EcoKeyboard.dismiss()
+                                }
+                            } else {
+                                Circle()
+                                    .fill(Color.theme.primaryText.opacity(0.1))
+                                    .frame(width: 180, height: 180)
+                                    .overlay(ProgressView().tint(Color.theme.primaryText))
+                            }
+
+                            storyInputBlock
+
+                            plantButton
+                                .padding(.top, 8)
+
+                            Spacer(minLength: 120)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
                     }
-                    .frame(width: 180, height: 180)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.theme.primaryText, lineWidth: 3))
-                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
-                    .onAppear {
-                        mapPosition = .region(MKCoordinateRegion(center: location, latitudinalMeters: 150, longitudinalMeters: 150))
-                    }
-                    // Desactiva el teclado si tocas el mapa
-                    .onTapGesture {
-                        isInputActive = false
-                    }
-                } else {
-                    Circle()
-                        .fill(Color.theme.primaryText.opacity(0.1))
-                        .frame(width: 180, height: 180)
-                        .overlay(ProgressView().tint(Color.theme.primaryText))
-                }
-                
-                // 4. Caja de Texto Unificada
-                VStack(spacing: 0) {
-                    // Título de la historia
-                    TextField("",
-                              text: $viewModel.title,
-                              prompt: Text("Título de tu eco").foregroundColor(Color.theme.primaryText.opacity(0.6)))
-                        .font(.headline)
-                        .foregroundStyle(Color.theme.primaryText)
-                        .padding()
-                        .focused($isInputActive) // Conectamos al FocusState
-                    
-                    // Línea divisoria
-                    Rectangle()
-                        .fill(Color.theme.primaryText.opacity(0.2))
-                        .frame(height: 1)
-                        .padding(.horizontal, 16)
-                    
-                    // Contenido
-                    TextEditor(text: $viewModel.content)
-                        .scrollContentBackground(.hidden)
-                        .foregroundStyle(Color.theme.primaryText)
-                        .padding(.horizontal, 12)
-                        .padding(.top, 8)
-                        .focused($isInputActive) // Conectamos al FocusState
-                        .overlay(alignment: .topLeading) {
-                            if viewModel.content.isEmpty {
-                                Text("Escribe aquí tu historia...")
-                                    .foregroundStyle(Color.theme.primaryText.opacity(0.5))
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, 16)
-                                    .allowsHitTesting(false)
+                    .scrollDismissesKeyboard(.interactively)
+                    .onChange(of: focusedField) { _, new in
+                        guard let new else { return }
+                        let scrollId: String
+                        let anchor: UnitPoint
+                        switch new {
+                        case .title:
+                            scrollId = "storyTitleField"
+                            anchor = UnitPoint(x: 0.5, y: 0.2)
+                        case .content:
+                            scrollId = "storyContentField"
+                            anchor = UnitPoint(x: 0.5, y: 0.28)
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
+                            withAnimation(.easeInOut(duration: 0.32)) {
+                                proxy.scrollTo(scrollId, anchor: anchor)
                             }
                         }
-                }
-                .background {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.theme.primaryText.opacity(0.5), lineWidth: 1)
-                        .background(Color.theme.primaryText.opacity(0.05).cornerRadius(16))
-                }
-                
-                Spacer(minLength: 0)
-                
-                // 5. Botón de Acción
-                Button(action: {
-                    Task {
-                        isInputActive = false // Oculta el teclado al plantar
-                        await viewModel.plantStory()
-                        if viewModel.error == nil { dismiss() }
                     }
-                }) {
-                    if viewModel.isPlanting {
-                        ProgressView()
-                            .tint(Color.theme.accent)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
-                    } else {
-                        Text("Plantar eco")
-                            .font(.headline)
-                            .foregroundStyle(Color.theme.accent)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Capsule().fill(Color.theme.primaryComponent))
-                    }
-                }
-                .disabled(viewModel.content.isEmpty || viewModel.title.isEmpty || viewModel.isPlanting)
-                .opacity((viewModel.content.isEmpty || viewModel.title.isEmpty) ? 0.6 : 1.0)
-                .padding(.bottom, 10)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 16)
-        }
-        // Agregamos la barra "Listo" encima del teclado
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Listo") {
-                    isInputActive = false
                 }
             }
         }
@@ -170,13 +125,92 @@ struct StoryCreationView: View {
             }
         }
     }
+
+    private var storyInputBlock: some View {
+        VStack(spacing: 0) {
+            TextField(
+                "",
+                text: $viewModel.title,
+                prompt: Text("Título de tu eco").foregroundColor(Color.theme.primaryText.opacity(0.6))
+            )
+            .font(.headline)
+            .foregroundStyle(Color.theme.primaryText)
+            .padding()
+            .focused($focusedField, equals: .title)
+            .id("storyTitleField")
+
+            Rectangle()
+                .fill(Color.theme.primaryText.opacity(0.2))
+                .frame(height: 1)
+                .padding(.horizontal, 16)
+
+            TextEditor(text: $viewModel.content)
+                .scrollContentBackground(.hidden)
+                .foregroundStyle(Color.theme.primaryText)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                .frame(minHeight: 160)
+                .focused($focusedField, equals: .content)
+                .id("storyContentField")
+                .overlay(alignment: .topLeading) {
+                    if viewModel.content.isEmpty {
+                        Text("Escribe aquí tu historia...")
+                            .foregroundStyle(Color.theme.primaryText.opacity(0.5))
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                            .allowsHitTesting(false)
+                    }
+                }
+        }
+        .background {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.theme.primaryText.opacity(0.5), lineWidth: 1)
+                .background(Color.theme.primaryText.opacity(0.05).cornerRadius(16))
+        }
+    }
+
+    private var plantButton: some View {
+        Button(action: {
+            Task {
+                focusedField = nil
+                EcoKeyboard.dismiss()
+                await viewModel.plantStory()
+                if viewModel.error == nil {
+                    if let coordinate = viewModel.lastLocation,
+                       let storyId = viewModel.lastPlantedStoryId {
+                        onPlantingSuccess?(coordinate, storyId)
+                    }
+                    dismiss()
+                }
+            }
+        }) {
+            if viewModel.isPlanting {
+                ProgressView()
+                    .tint(Color.theme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
+            } else {
+                Text("Plantar eco")
+                    .font(.headline)
+                    .foregroundStyle(Color.theme.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Capsule().fill(Color.theme.primaryComponent))
+            }
+        }
+        .disabled(viewModel.content.isEmpty || viewModel.title.isEmpty || viewModel.isPlanting)
+        .opacity((viewModel.content.isEmpty || viewModel.title.isEmpty) ? 0.6 : 1.0)
+    }
 }
 
 // MARK: - Preview
 
 #Preview {
     struct MockPlantStoryUseCase: PlantStoryUseCaseProtocol {
-        func execute(title: String, content: String, latitude: Double, longitude: Double) async throws { }
+        func execute(title: String, content: String, latitude: Double, longitude: Double) async throws -> UUID {
+            UUID()
+        }
     }
 
     struct MockGetLocationForPlantingUseCase: GetCurrentLocationForPlantingUseCaseProtocol {

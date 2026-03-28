@@ -2,14 +2,24 @@
 //  AppDIContainer.swift
 //  Eco
 //
-//  Created by Fernando Buenrostro on 03/03/26.
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
+//  Purpose: Wires the app together, SwiftData, repositories, use cases, and screen factories.
+//
+//  Responsibilities:
+//  - Own the shared model container and services used across features.
+//  - Expose make factories so views get dependencies without knowing implementation details.
 //
 
+import CoreLocation
 import Foundation
 import SwiftData
 
+/// App composition root: SwiftData, data sources, repositories, use cases, and screen factories.
 final class AppDIContainer {
-    /// Contenedor de SwiftData para toda la app (se expone para .modelContainer en SwiftUI).
+    // MARK: - Persistence
+
+    /// Shared SwiftData store for every data source in this container.
     let modelContainer: ModelContainer
 
     // MARK: - Data sources
@@ -23,16 +33,27 @@ final class AppDIContainer {
     
     private lazy var authorProfileDataSource = FirebaseAuthorProfileDataSource()
 
-    // Remote / Sync
-    private lazy var firestoreStoryDataSource = FirestoreStoryDataSource()
+    private lazy var firestoreStoryDataSource: FirestoreStoryDataSourceProtocol = FirestoreStoryDataSource()
+    private lazy var syncPullStoriesUseCase: SyncPullStoriesUseCaseProtocol = {
+        SyncPullStoriesUseCaseImpl(
+            remoteDataSource: firestoreStoryDataSource,
+            localDataSource: storyDataSource
+        )
+    }()
+    private lazy var syncStateService: SyncStateService = {
+        SyncStateService()
+    }()
     private lazy var syncWorker: SyncWorkerProtocol = {
         SyncWorker(
             localDataSource: storyDataSource,
-            remoteDataSource: firestoreStoryDataSource
+            remoteDataSource: firestoreStoryDataSource,
+            syncPullUseCase: syncPullStoriesUseCase,
+            syncStateService: syncStateService
         )
     }()
 
     // MARK: - Repositories
+    
     private lazy var storyRepository: StoryRepositoryProtocol = {
         StoryRepository(storyLocalDataSource: storyDataSource)
     }()
@@ -46,20 +67,22 @@ final class AppDIContainer {
     private lazy var authorProfileRepository: AuthorProfileRepositoryProtocol = {
         AuthorProfileRepository(dataSource: authorProfileDataSource)
     }()
-    private lazy var sessionRepository: SessionRepositoryProtocol = {
-        LocalSessionRepository()
-    }()
-    
     private lazy var authRepository: AuthRepositoryProtocol = {
         FirebaseAuthRepository(dataSource: authDataSource)
+    }()
+    private lazy var sessionRepository: SessionRepositoryProtocol = {
+        LocalSessionRepository(authRepository: authRepository)
     }()
 
     // MARK: - Core services
     private lazy var locationService: LocationServiceProtocol = {
         LocationService()
     }()
+    private lazy var notificationLogService: NotificationLogServiceProtocol = {
+        NotificationLogService()
+    }()
     private lazy var localNotificationService: LocalNotificationServiceProtocol = {
-        UserNotificationService()
+        UserNotificationService(logService: notificationLogService)
     }()
     private lazy var locationEventsAdapter: LocationEventsAdapter = {
         LocationEventsAdapter(
@@ -68,10 +91,22 @@ final class AppDIContainer {
             trackProgressOnStoryEntryUseCase: trackUserProgressOnStoryEntryUseCase
         )
     }()
+    private lazy var geofencingService: GeofencingService = {
+        GeofencingService(localNotificationService: localNotificationService)
+    }()
+    private lazy var getStoriesForGeofencingUseCase: GetStoriesForGeofencingUseCaseProtocol = {
+        GetStoriesForGeofencingUseCaseImpl(storyRepository: storyRepository)
+    }()
 
     // MARK: - Use cases
+    
+    private let mapDiscoveryConfig = MapDiscoveryConfig.default
+
     private lazy var discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol = {
-        DiscoverNearbyStoriesUseCaseImpl(storyRepository: storyRepository)
+        DiscoverNearbyStoriesUseCaseImpl(
+            storyRepository: storyRepository,
+            config: mapDiscoveryConfig
+        )
     }()
     private lazy var trackUserProgressOnStoryEntryUseCase: TrackUserProgressOnStoryEntryUseCaseProtocol = {
         TrackUserProgressOnStoryEntryUseCaseImpl(
@@ -94,22 +129,42 @@ final class AppDIContainer {
         GetStoryDetailUseCaseImpl(storyRepository: storyRepository)
     }()
     private lazy var deleteStoryUseCase: DeleteStoryUseCaseProtocol = {
-        DeleteStoryUseCaseImpl(storyRepository: storyRepository)
+        DeleteStoryUseCaseImpl(storyRepository: storyRepository, sessionRepository: sessionRepository)
     }()
 
-    /// Misma instancia para la pantalla raíz (mapa) para no perder estado.
+    private lazy var updateStoryUseCase: UpdateStoryUseCaseProtocol = {
+        UpdateStoryUseCaseImpl(storyRepository: storyRepository, sessionRepository: sessionRepository)
+    }()
+
     private lazy var mapViewModel: MapViewModel = {
         MapViewModel(
             discoverUseCase: discoverNearbyStoriesUseCase,
             discoveryController: locationEventsAdapter,
-            syncPullStoriesUseCase: syncPullStoriesUseCase
+            locationService: locationService,
+            mapDiscoveryConfig: mapDiscoveryConfig,
+            syncStoriesUseCase: syncStoriesUseCase,
+            getStoriesForGeofencingUseCase: getStoriesForGeofencingUseCase,
+            geofencingService: geofencingService
         )
     }()
-    private lazy var mapRouter: MapRouter = {
-        MapRouter(storyCreationViewFactory: { [weak self] in self?.makeStoryCreationView() })
+    private lazy var getAuthorProfileByIdUseCase: GetAuthorProfileByIdUseCaseProtocol = {
+        GetAuthorProfileByIdUseCaseImpl(repository: authorProfileRepository)
     }()
-    
-    // GetStories
+
+    private lazy var mapRouter: MapRouter = {
+        MapRouter(
+            storyCreationViewFactory: { [weak self] onPlantingSuccess in
+                self?.makeStoryCreationView(onPlantingSuccess: onPlantingSuccess)
+            },
+            makeStoryDetailViewModel: { [weak self] id in
+                guard let self else {
+                    preconditionFailure("AppDIContainer deallocated before map reader")
+                }
+                return self.makeStoryDetailViewModel(storyId: id)
+            },
+            authorProfileByIdUseCase: getAuthorProfileByIdUseCase
+        )
+    }()
     
     private lazy var getPlantedStoriesUseCase: GetPlantedStoriesUseCaseProtocol = {
         GetPlantedStoriesUseCaseImpl(storyRepository: storyRepository, sessionRepository: sessionRepository)
@@ -118,18 +173,13 @@ final class AppDIContainer {
     private lazy var getDiscoveredStoriesUseCase: GetDiscoveredStoriesUseCaseProtocol = {
         GetDiscoveredStoriesUseCaseImpl(userRepository: userRepository)
     }()
+
+    // MARK: - Remote and Sync
     
-    // Firebase / Sync
     private lazy var syncStoriesUseCase: SyncStoriesUseCase = {
-        SyncStoriesUseCaseImpl(worker: syncWorker)
+        SyncStoriesUseCaseImpl(worker: syncWorker, storyRepository: storyRepository)
     }()
     
-    private lazy var syncPullStoriesUseCase: SyncPullStoriesUseCaseProtocol = {
-        SyncPullStoriesUseCaseImpl(
-            remoteDataSource: firestoreStoryDataSource,
-            localDataSource: storyDataSource
-        )
-    }()
     private lazy var loginUsecase: LoginUseCaseProtocol = {
         LoginUseCaseImpl(repository: authRepository)
     }()
@@ -153,6 +203,21 @@ final class AppDIContainer {
         )
     }()
 
+    private lazy var saveSessionNicknameUseCase: SaveSessionNicknameUseCaseProtocol = {
+        SaveSessionNicknameUseCaseImpl(
+            sessionRepository: sessionRepository,
+            authorProfileRepository: authorProfileRepository
+        )
+    }()
+
+    private lazy var loginWithAppleUseCase: LoginWithAppleUseCaseProtocol = {
+        LoginWithAppleUseCaseImpl(repository: authRepository)
+    }()
+
+    private lazy var loginWithGoogleUseCase: LoginWithGoogleUseCaseProtocol = {
+        LoginWithGoogleUseCaseImpl(repository: authRepository)
+    }()
+
     private lazy var createAuthorProfileUseCase: CreateAuthorProfileUseCase = {
         CreateAuthorProfileUseCaseImpl(repository: authorProfileRepository)
     }()
@@ -164,17 +229,31 @@ final class AppDIContainer {
     private lazy var saveAuthorProfileUseCase: SaveAuthorProfileUseCase = {
         SaveAuthorProfileUseCaseImpl(repository: authorProfileRepository)
     }()
+    
+    /// Keeps `triggerSync()` from running twice at the same time.
+    private var isSyncing = false
+
+    // MARK: - Init
 
     init() {
         do {
             modelContainer = try ModelContainer(for: StoryEntity.self, UserEntity.self)
         } catch {
+            #if DEBUG
+            let config = ModelConfiguration(isStoredInMemoryOnly: true)
+            modelContainer = try! ModelContainer(
+                for: StoryEntity.self,
+                UserEntity.self,
+                configurations: config
+            )
+            #else
             fatalError("No se pudo inicializar la base de datos: \(error)")
+            #endif
         }
     }
 }
 
-// MARK: - ViewModel Factories
+// MARK: - View model factories
 
 @MainActor
 extension AppDIContainer {
@@ -190,8 +269,13 @@ extension AppDIContainer {
     }
 
     @MainActor
-    func makeStoryCreationView() -> StoryCreationView {
-        StoryCreationView(viewModel: makeStoryCreationViewModel())
+    func makeStoryCreationView(
+        onPlantingSuccess: ((CLLocationCoordinate2D, UUID) -> Void)? = nil
+    ) -> StoryCreationView {
+        StoryCreationView(
+            viewModel: makeStoryCreationViewModel(),
+            onPlantingSuccess: onPlantingSuccess
+        )
     }
 
     @MainActor
@@ -208,7 +292,8 @@ extension AppDIContainer {
         CollectionViewModel(
             getPlantedStoriesUseCase: getPlantedStoriesUseCase,
             getDiscoveredStoriesUseCase: getDiscoveredStoriesUseCase,
-            deleteStoryUseCase: deleteStoryUseCase
+            deleteStoryUseCase: deleteStoryUseCase,
+            syncStoriesUseCase: syncStoriesUseCase
         )
     }
 
@@ -218,6 +303,9 @@ extension AppDIContainer {
             storyId: storyId,
             getStoryDetailUseCase: getStoryDetailUseCase,
             getLocationUseCase: getLocationForPlantingUseCase,
+            updateStoryUseCase: updateStoryUseCase,
+            deleteStoryUseCase: deleteStoryUseCase,
+            syncStoriesUseCase: syncStoriesUseCase,
             sessionRepository: sessionRepository
         )
     }
@@ -237,7 +325,20 @@ extension AppDIContainer {
     
     @MainActor
     func makeAuthGateViewModel() -> AuthGateViewModel {
-        AuthGateViewModel(getCurrentSessionUseCase: getCurrentSessionUseCase)
+        AuthGateViewModel(
+            getCurrentSessionUseCase: getCurrentSessionUseCase,
+            getAuthorProfileUseCase: getAuthorProfileUseCase,
+            saveSessionNicknameUseCase: saveSessionNicknameUseCase,
+            logoutUseCase: logoutUseCase
+        )
+    }
+
+    @MainActor
+    func makeSocialAuthViewModel() -> SocialAuthViewModel {
+        SocialAuthViewModel(
+            loginWithAppleUseCase: loginWithAppleUseCase,
+            loginWithGoogleUseCase: loginWithGoogleUseCase
+        )
     }
 
     @MainActor
@@ -245,12 +346,45 @@ extension AppDIContainer {
         ProfileViewModel(
             logoutUseCase: logoutUseCase,
             getAuthorProfileUseCase: getAuthorProfileUseCase,
-            saveAuthorProfileUseCase: saveAuthorProfileUseCase
+            saveAuthorProfileUseCase: saveAuthorProfileUseCase,
+            getCurrentSessionUseCase: getCurrentSessionUseCase
         )
     }
 
     @MainActor
-    func makeProfileView() -> ProfileView {
-        ProfileView(viewModel: makeProfileViewModel())
+    func makeProfileView(onClose: (() -> Void)? = nil) -> ProfileView {
+        ProfileView(viewModel: makeProfileViewModel(), onClose: onClose)
+    }
+
+    @MainActor
+    func makeNotificationsViewModel() -> NotificationsViewModel {
+        NotificationsViewModel(logService: notificationLogService)
+    }
+
+    func makeLocationService() -> LocationServiceProtocol {
+        locationService
+    }
+
+    /// Syncs stories with the server; waits if a sync is already running.
+    func triggerSync() async {
+        guard !isSyncing else { return }
+        isSyncing = true
+        defer { isSyncing = false }
+        await syncStoriesUseCase.execute()
+    }
+
+    @MainActor
+    func makeSyncStateService() -> SyncStateService {
+        syncStateService
+    }
+
+    /// For deep links: turns a string id into a `UUID` if the story exists; syncs once if it isn’t on disk yet.
+    func resolveStoryIdForDeepLink(_ storyId: String) async -> UUID? {
+        guard let uuid = UUID(uuidString: storyId) else { return nil }
+        if (try? await storyRepository.fetchStory(by: uuid)) != nil {
+            return uuid
+        }
+        await syncStoriesUseCase.execute()
+        return (try? await storyRepository.fetchStory(by: uuid)) != nil ? uuid : nil
     }
 }

@@ -2,6 +2,7 @@
 disabled_rules:
   - trailing_whitespace
   - function_body_length
+  - implicit_optional_initialization
 
 # 2. Reglas de análisis profundo
 analyzer_rules:
@@ -22,13 +23,21 @@ line_length:
   warning: 400
   error: 500
 
+type_body_length:
+  warning: 350
+  error: 450
+
+file_length:
+  warning: 500
+  error: 800
+
 force_cast: warning
 force_unwrapping: warning
 force_try: warning         # Que sea advertencia para que no te tire la compilación
 
 type_name:
   min_length: 3
-  max_length: 40
+  max_length: 60
   allowed_symbols: ["_"]
 
 identifier_name:

@@ -27,3 +27,17 @@ xcuserdata/
 GoogleService-Info.plist
 **/GoogleService-Info.plist
 
+# Env / credentials (never public)
+.env
+.env.*
+!.env.example
+
+# iOS signing & keys (usually local-only)
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+
+# Local dev utilities (kept out of version control)
+scripts/
+

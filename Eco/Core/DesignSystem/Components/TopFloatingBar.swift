@@ -2,6 +2,8 @@
 //  TopFloatingBar.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 
@@ -34,5 +36,18 @@ struct TopFloatingBar: View {
         }
         // Solo dejamos padding arriba, a la derecha queda en 0 para pegar al borde
         .padding(.top, 16)
+    }
+}
+
+#Preview {
+    ZStack {
+        Color.theme.primaryComponent.ignoresSafeArea()
+        VStack {
+            HStack {
+                Spacer()
+                TopFloatingBar { _ in }
+            }
+            Spacer()
+        }
     }
 }

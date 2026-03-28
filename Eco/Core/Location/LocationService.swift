@@ -2,6 +2,8 @@
 //  LocationService.swift
 //  Eco
 //
+//  Copyright © 2026 Fernando Gonzalez Buenrostro.
+//
 //  Created by Fernando Buenrostro on 03/03/26.
 //
 
@@ -16,6 +18,10 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
     private let locationSubject = CurrentValueSubject<CLLocationCoordinate2D?, Never>(nil)
     var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> {
         locationSubject.eraseToAnyPublisher()
+    }
+
+    var lastKnownCoordinate: CLLocationCoordinate2D? {
+        locationSubject.value
     }
     
     var isMonitoringEnabled: Bool {
@@ -36,7 +42,11 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
         // In the future the accuracy should be configurable depending on the app mode (exploration vs planting a story)
     }
     
-    func requestPermission() async throws {
+    func requestWhenInUse() async throws {
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func requestAlways() async throws {
         locationManager.requestAlwaysAuthorization()
     }
     
