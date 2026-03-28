@@ -41,7 +41,7 @@ Optional **local-only** folder at the project root: `scripts/` is listed in `.gi
 
 6. **`SwiftDataStoryDataSource`** (`Core/Data/Persistence/SwiftDataStoryDataSource.swift`)  
    - `fetchActiveStoriesInBoundingBox` uses a SwiftData `#Predicate` (`deletedAt == nil` + lat/lon range).  
-   - `fetchAll()` still loads every row when callers request it.
+   - List/collection flows use `fetchActiveStories()` / `fetchActiveStoriesSortedByUpdatedAtDescending()` so soft-deleted rows are not loaded from SQLite (still loads all *active* rows; pagination would be a further step if counts grow very large).
 
 7. **Remote fill (separate path):** `SyncStoriesUseCaseImpl` + `SyncWorker` pull from `FirestoreStoryDataSource` into local storage; then `notifyStoriesUpdatePublisher` causes discovery to replay.
 
@@ -285,4 +285,4 @@ These interact with discovery indirectly after sync changes local data (`stories
 | Map discovery | `fetchActiveStoriesInBoundingBox` via `GeographicBounds` + in-memory distance (near user) or box + cap (explore) | Spatial index / grid column; tighten caps |
 | Geofencing | `fetchActiveStoriesInBoundingBox` with ~5 km prefetch + sort + `prefix(limit)` | Tune prefetch radius vs `GeofencingService` region size |
 | Sync pull | `fetchByRemoteIds` in chunks of 200 + in-memory map + same `SyncConflictResolver` loop | Adjust chunk size; optional DB index on `remoteId` |
-| Lists / other | `fetchAllStories` / sorted fetch where the UI needs the full library | Keep an eye on Collection performance |
+| Lists / other | Planted tab: `GetPlantedStoriesUseCase` pages via `StoryRepository.fetchPlantedStories` (SwiftData `limit`/`offset`, stable sort). Discovered tab still loads from `user.foundStories` (see TODO in use case). | Collection planted list scales with paging; discovered is future relational work |
