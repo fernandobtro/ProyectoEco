@@ -15,6 +15,8 @@ protocol StoryRepositoryProtocol {
     func notifyStoriesUpdated()
     func fetchAllStories() async throws -> [Story]
     func fetchAllStoriesSortedByUpdatedAtDesc() async throws -> [Story]
+    /// Active non-deleted stories by `authorID`, stable sort (`updatedAt` desc, then `id` desc), for pagination.
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [Story]
     /// Active stories (`deletedAt == nil`) inside the inclusive geographic rectangle (pre-filter before distance logic).
     func fetchActiveStoriesInBoundingBox(
         minLatitude: Double,

@@ -42,17 +42,23 @@ struct StoryRepository: StoryRepositoryProtocol {
     /// Fetches all stories that haven't been marked as deleted.
     /// - Returns: An array of domain ``Story`` models.
     func fetchAllStories() async throws -> [Story] {
-        let entities = try await storyLocalDataSource.fetchAll()
-            .filter { $0.deletedAt == nil }
+        let entities = try await storyLocalDataSource.fetchActiveStories()
         return entities.map(StoryPersistenceMapper.toDomain)
     }
     
     /// Fetches all active stories ordered by their last update date (newest first), excluding logically deleted.
     /// - Returns: Sorted array of domain ``Story`` models.
     func fetchAllStoriesSortedByUpdatedAtDesc() async throws -> [Story] {
-        let entities = try await storyLocalDataSource.fetchAll()
-            .filter { $0.deletedAt == nil }
-            .sorted { $0.updatedAt > $1.updatedAt }
+        let entities = try await storyLocalDataSource.fetchActiveStoriesSortedByUpdatedAtDescending()
+        return entities.map(StoryPersistenceMapper.toDomain)
+    }
+
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [Story] {
+        let entities = try await storyLocalDataSource.fetchPlantedStories(
+            authorID: authorID,
+            limit: limit,
+            offset: offset
+        )
         return entities.map(StoryPersistenceMapper.toDomain)
     }
 
@@ -115,7 +121,7 @@ struct StoryRepository: StoryRepositoryProtocol {
         let now = Date()
         entity.deletedAt = now
         entity.updatedAt = now
-        entity.syncStatus = SyncStatus.pendingDelete.rawValue
+        entity.syncStatus = .pendingDelete
         try await storyLocalDataSource.saveChanges()
         updatesSubject.send(())
     }
