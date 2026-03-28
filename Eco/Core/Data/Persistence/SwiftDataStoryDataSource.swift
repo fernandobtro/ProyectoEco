@@ -31,7 +31,7 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
         self.modelContext = modelContext
     }
 
-    // MARK: - Public API (CRUD)
+    // MARK: - Public API
     
     /// Inserts a new story entity to the context to persist it.
     /// - Parameter story: The ``StoryEntity`` instance to save.
@@ -45,10 +45,47 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
         try modelContext.save()
     }
     
-    /// Fetches every story currently stored in the local database.
-    /// - Returns: An array of ``StoryEntity`` objects.
-    func fetchAll() async throws -> [StoryEntity] {
-        let descriptor = FetchDescriptor<StoryEntity>()
+    /// Fetches stories that are not soft-deleted (`deletedAt == nil`).
+    func fetchActiveStories() async throws -> [StoryEntity] {
+        let predicate = #Predicate<StoryEntity> { story in
+            story.deletedAt == nil
+        }
+        let descriptor = FetchDescriptor<StoryEntity>(predicate: predicate)
+        return try modelContext.fetch(descriptor)
+    }
+
+    /// Active stories only, ordered by `updatedAt` descending (newest first), tie-broken by `id` for stable pagination.
+    func fetchActiveStoriesSortedByUpdatedAtDescending() async throws -> [StoryEntity] {
+        let predicate = #Predicate<StoryEntity> { story in
+            story.deletedAt == nil
+        }
+        let descriptor = FetchDescriptor<StoryEntity>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\.updatedAt, order: .reverse),
+                SortDescriptor(\.id, order: .reverse)
+            ]
+        )
+        return try modelContext.fetch(descriptor)
+    }
+
+    /// Active, non-deleted stories for one author; same stable sort as ``fetchActiveStoriesSortedByUpdatedAtDescending()``.
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [StoryEntity] {
+        let aid = authorID
+        let safeLimit = max(0, limit)
+        let safeOffset = max(0, offset)
+        let predicate = #Predicate<StoryEntity> { story in
+            story.deletedAt == nil && story.authorID == aid
+        }
+        var descriptor = FetchDescriptor<StoryEntity>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\.updatedAt, order: .reverse),
+                SortDescriptor(\.id, order: .reverse)
+            ]
+        )
+        descriptor.fetchLimit = safeLimit
+        descriptor.fetchOffset = safeOffset
         return try modelContext.fetch(descriptor)
     }
 
@@ -80,9 +117,10 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
     /// Results are filtered by `syncStatus` and ordered chronologically (oldest first) to ensure logical consistentcy during the push process.
     /// - Returns: An array of pending ``StoryEntity``objects.
     func fetchPending() async throws -> [StoryEntity] {
+        let syncedRaw = SyncStatus.synced.rawValue
         let descriptor = FetchDescriptor<StoryEntity>(
-            predicate: #Predicate {
-                $0.syncStatus != "synced"
+            predicate: #Predicate<StoryEntity> { story in
+                story.syncStatus.rawValue != syncedRaw
             },
             sortBy: [SortDescriptor(\.updatedAt, order: .forward)]
         )
@@ -99,7 +137,11 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
         let descriptor = FetchDescriptor<StoryEntity>(predicate: predicate)
         return try modelContext.fetch(descriptor).first
     }
-
+    
+    /// Fetches local entities matching a list of remote IDs using an optimized chunking strategy.
+    /// This prevents performance degradation and potential SQLite limits when reconciling large sync payloads.
+    /// - Parameter ids: An array of remote document identifiers.
+    /// - Returns: An array of matching local ``StoryEntity`` objects.
     func fetchByRemoteIds(_ ids: [String]) async throws -> [StoryEntity] {
         let unique = Array(Set(ids.filter { !$0.isEmpty }))
         guard !unique.isEmpty else { return [] }
@@ -119,6 +161,9 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
         return combined
     }
 
+    /// Executes a spatial query to retrieve stories within a specific geographic rectangle.
+    /// Core optimization for map exploration and discovery,filtering results at the database level instead of in-memory.
+    /// - Note: Only retrieves "active" stories (`deletedAt == nil`).
     func fetchActiveStoriesInBoundingBox(
         minLatitude: Double,
         maxLatitude: Double,

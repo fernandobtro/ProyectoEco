@@ -9,7 +9,7 @@
 //  Purpose: Local SwiftData access for story entities and sync-related queries.
 //
 //  Responsibilities:
-//  - Persist inserts and saves, fetch all or by local id, delete when a row exists.
+//  - Persist inserts and saves, fetch active rows or by local id, delete when a row exists.
 //  - Surface pending sync rows and resolve rows by remote id.
 //
 
@@ -18,7 +18,12 @@ import Foundation
 protocol StoryLocalDataSourceProtocol {
     func saveNew(story: StoryEntity) async throws
     func saveChanges() async throws
-    func fetchAll() async throws -> [StoryEntity]
+    /// Non-deleted stories only (`deletedAt == nil`). Prefer over scanning the full table including soft-deleted rows.
+    func fetchActiveStories() async throws -> [StoryEntity]
+    /// Active stories with `updatedAt` descending (newest first), tie-broken by `id` for stable pagination.
+    func fetchActiveStoriesSortedByUpdatedAtDescending() async throws -> [StoryEntity]
+    /// Active stories for one author, same stable sort as above; supports `limit` / `offset` paging.
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [StoryEntity]
     func fetch(by id: UUID) async throws -> StoryEntity?
     func delete(id: UUID) async throws
     /// Fetches rows not yet `synced`, ordered by `updatedAt` ascending for sequential sync processing.
