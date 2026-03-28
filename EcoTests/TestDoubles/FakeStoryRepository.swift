@@ -35,7 +35,21 @@ final class FakeStoryRepository: StoryRepositoryProtocol {
     }
 
     func fetchAllStoriesSortedByUpdatedAtDesc() async throws -> [Story] {
-        stories.sorted { $0.updatedAt > $1.updatedAt }
+        stories.sorted { lhs, rhs in
+            if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
+            return lhs.id.uuidString > rhs.id.uuidString
+        }
+    }
+
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [Story] {
+        let sorted = stories
+            .filter { $0.authorID == authorID }
+            .sorted { lhs, rhs in
+                if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
+                return lhs.id.uuidString > rhs.id.uuidString
+            }
+        guard offset < sorted.count else { return [] }
+        return Array(sorted.dropFirst(offset).prefix(max(0, limit)))
     }
 
     func fetchActiveStoriesInBoundingBox(

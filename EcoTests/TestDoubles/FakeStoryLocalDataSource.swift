@@ -23,8 +23,28 @@ final class FakeStoryLocalDataSource: StoryLocalDataSourceProtocol {
 
     func saveChanges() async throws {}
 
-    func fetchAll() async throws -> [StoryEntity] {
+    func fetchActiveStories() async throws -> [StoryEntity] {
+        entities.filter { $0.deletedAt == nil }
+    }
+
+    func fetchActiveStoriesSortedByUpdatedAtDescending() async throws -> [StoryEntity] {
         entities
+            .filter { $0.deletedAt == nil }
+            .sorted { lhs, rhs in
+                if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
+                return lhs.id.uuidString > rhs.id.uuidString
+            }
+    }
+
+    func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [StoryEntity] {
+        let sorted = entities
+            .filter { $0.deletedAt == nil && $0.authorID == authorID }
+            .sorted { lhs, rhs in
+                if lhs.updatedAt != rhs.updatedAt { return lhs.updatedAt > rhs.updatedAt }
+                return lhs.id.uuidString > rhs.id.uuidString
+            }
+        guard offset < sorted.count else { return [] }
+        return Array(sorted.dropFirst(offset).prefix(max(0, limit)))
     }
 
     func fetch(by id: UUID) async throws -> StoryEntity? {
