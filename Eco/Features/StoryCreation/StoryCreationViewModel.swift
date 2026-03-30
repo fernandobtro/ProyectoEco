@@ -6,11 +6,16 @@
 //
 //  Created by Fernando Buenrostro on 03/03/26.
 //
+//  Purpose: Form state, GPS sampling, plant + sync orchestration for new stories.
+//
 
 import CoreLocation
 import Foundation
 import Observation
 
+/// Uses ``PlantStoryUseCaseProtocol``, ``GetCurrentLocationForPlantingUseCaseProtocol``, and ``SyncStoriesUseCase`` to create a story at `lastLocation`.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Plant Story Pipeline**.
 @MainActor
 @Observable
 class StoryCreationViewModel {
@@ -46,7 +51,7 @@ class StoryCreationViewModel {
         self.syncStoriesUseCase = syncStoriesUseCase
     }
     
-    /// Llamar desde la vista en `.task { await viewModel.updateLocation() }`.
+    /// Call from the view with `.task { await viewModel.updateLocation() }`.
     func updateLocation() async {
         lastLocation = await getLocationUseCase.requestLocation()
     }

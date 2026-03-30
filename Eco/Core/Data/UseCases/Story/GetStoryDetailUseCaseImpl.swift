@@ -8,12 +8,10 @@
 //
 //  Purpose: Load one story for detail UI using the story repository.
 //
-//  Responsibilities:
-//  - Call `StoryRepository.fetchStory(by:)` and return the result unchanged.
-//
 
 import Foundation
 
+/// Load one story for detail UI using the story repository.
 final class GetStoryDetailUseCaseImpl: GetStoryDetailUseCaseProtocol {
     // MARK: - Dependencies
 

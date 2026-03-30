@@ -6,12 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 19/03/26.
 //
+//  Purpose: Reusable view helpers (e.g. global keyboard dismiss without an input accessory bar).
+//
 
 import Foundation
 import SwiftUI
 import UIKit
 
-/// Cierre global del teclado (sin barra «Listo» encima del teclado).
+/// Dismisses the first responder / keyboard app-wide.
 enum EcoKeyboard {
     static func dismiss() {
         UIApplication.shared.sendAction(
@@ -26,13 +28,13 @@ enum EcoKeyboard {
 struct EcoTextFieldModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            // Cursor / selección: evita heredar el accent del entorno (p. ej. sobre fondo verde).
+            // Cursor / selection: avoid inheriting environment accent (e.g. on green background).
             .tint(Color.theme.primaryText)
             // Color del texto que se ingresa
             .foregroundStyle(Color.theme.primaryText)
             .font(.poppins(.regular, size: 16))
             .padding()
-            // El padding horizontal aquí añade espacio entre el texto y el borde del RoundedRectangle
+            // Horizontal padding between label text and the rounded rectangle edge
             .padding(.horizontal, 4)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

@@ -7,13 +7,11 @@
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 //  Purpose: Implementation of the AuthRepositoryProtocol using Firebase as the identity provider.
-//  Responsabilities:
-//  - Coordinate between domain-level authentication requests and the Firebase data source.
-//  - Provide a stable interface for session management (Login, Register, Logout)
-//  - Act as the bridge for third-party social providers (Apple, Google).
+//
 
 import Foundation
 
+/// Implementation of the AuthRepositoryProtocol using Firebase as the identity provider.
 final class FirebaseAuthRepository: AuthRepositoryProtocol {
     // MARK: - Dependencies
     private let dataSource: FirebaseAuthDataSource
@@ -37,7 +35,7 @@ final class FirebaseAuthRepository: AuthRepositoryProtocol {
         try await dataSource.login(email: email, password: password)
     }
     
-    // MARK: Session Management
+    // MARK: - Session Management
     
     func logout() throws {
         try dataSource.logout()

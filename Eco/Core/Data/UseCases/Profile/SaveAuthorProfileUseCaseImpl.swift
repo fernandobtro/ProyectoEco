@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Implements `SaveAuthorProfileUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `SaveAuthorProfileUseCase` using repositories and async side effects.
 final class SaveAuthorProfileUseCaseImpl: SaveAuthorProfileUseCase {
     private let repository: AuthorProfileRepositoryProtocol
 

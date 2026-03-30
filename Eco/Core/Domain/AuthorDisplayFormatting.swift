@@ -4,14 +4,15 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Evita mostrar el UID de Firebase (u otros identificadores técnicos) donde el usuario espera un apodo.
+//  Purpose: Hides raw Firebase UIDs where the UI should show a human nickname.
 //
 
 import Foundation
 
+/// Nickname sanitization for profile and reader surfaces.
 enum EcoAuthorDisplayFormatting {
 
-    /// Apodo listo para UI, o `nil` si el valor guardado es vacío, coincide con el UID del autor, o no debe mostrarse.
+    /// Display-safe nickname, or `nil` when empty, equal to the author UID, or otherwise not showable.
     static func displayNickname(_ raw: String?, authorFirebaseUid: String) -> String? {
         let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !trimmed.isEmpty else { return nil }

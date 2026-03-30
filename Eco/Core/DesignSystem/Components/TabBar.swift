@@ -6,12 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 15/03/26.
 //
+//  Purpose: Root tab identifiers, SF Symbol image names, and short tab titles.
+//
 
 import Foundation
 
+/// Map vs collection tabs for ``RootView`` / ``CustomTabBar``.
 enum TabBar: String, CaseIterable {
     case map = "map.fill"
-    /// Sin adornos tipo «sparkle» de otros símbolos del sistema.
     case collection = "books.vertical.fill"
 
     var title: String {

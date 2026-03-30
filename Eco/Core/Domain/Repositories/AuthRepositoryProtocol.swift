@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Repository boundary for Auth (Domain defines, Data implements).
+//
 
 import Foundation
 
+/// Repository boundary for Auth (Domain defines, Data implements).
 protocol AuthRepositoryProtocol {
     func register(email: String, password: String) async throws -> String
     func login(email: String, password: String) async throws -> String

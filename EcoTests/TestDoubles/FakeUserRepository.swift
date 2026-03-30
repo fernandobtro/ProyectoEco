@@ -20,7 +20,7 @@ final class FakeUserRepository: UserRepositoryProtocol {
     var updateProgressResult: Bool = false
     /// Incremented every time `syncWithCloud` runs.
     private(set) var syncWithCloudCallCount = 0
-    /// Invoked after incrementing the counter; use to fulfill expectations.
+    /// Invoked after incrementing the counter, use to fulfill expectations.
     var onSyncWithCloud: (() -> Void)?
 
     func getCurrentUser() async throws -> User? {

@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Implements `UpdateStoryUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `UpdateStoryUseCase` using repositories and async side effects.
 final class UpdateStoryUseCaseImpl: UpdateStoryUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
     private let sessionRepository: SessionRepositoryProtocol

@@ -6,6 +6,8 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Apple and Google sign-in using domain use cases and ``AppleSignInHelper``.
+//
 
 import FirebaseCore
 import Foundation
@@ -13,6 +15,9 @@ import GoogleSignIn
 import Observation
 import UIKit
 
+/// Shared social auth state for login and registration screens.
+///
+/// Auth context: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (social providers).
 @Observable
 @MainActor
 final class SocialAuthViewModel {

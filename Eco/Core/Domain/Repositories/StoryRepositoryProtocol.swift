@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 27/02/26.
 //
+//  Purpose: Repository boundary for Story (Domain defines, Data implements).
+//
 
 import Combine
 import Foundation
 
+/// Repository boundary for Story (Domain defines, Data implements).
 protocol StoryRepositoryProtocol {
     var storiesUpdatePublisher: AnyPublisher<Void, Never> { get }
     func notifyStoriesUpdated()
@@ -27,6 +30,6 @@ protocol StoryRepositoryProtocol {
     func fetchStory(by id: UUID) async throws -> Story?
     func createStory(_ story: Story) async throws
     func updateStory(_ story: Story) async throws
-    /// Si no hay fila local para esa id, no hace nada y no lanza error.
+    /// No-op when no local row exists (doesn't throw).
     func delete(storyID: UUID) async throws
 }

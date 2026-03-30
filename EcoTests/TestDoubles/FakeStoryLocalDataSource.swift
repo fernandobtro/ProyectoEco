@@ -13,6 +13,7 @@
 import Foundation
 @testable import Eco
 
+@MainActor
 final class FakeStoryLocalDataSource: StoryLocalDataSourceProtocol {
     var entities: [StoryEntity] = []
     private(set) var fetchByRemoteIdsInvocations: [[String]] = []

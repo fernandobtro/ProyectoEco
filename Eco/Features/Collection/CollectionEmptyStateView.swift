@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Estados vacíos Mis Ecos / Desbloqueados. Ilustración: SF Symbols como sustituto hasta assets lineales del diseño.
+//  Purpose: Empty states for planted vs discovered, SF Symbol placeholders until final illustration assets.
 //
 
 import SwiftUI
 
+/// Centered empty state with optional primary action (plant first story, go to map).
 struct CollectionEmptyStateView: View {
     enum Kind {
         case plantedNoStories

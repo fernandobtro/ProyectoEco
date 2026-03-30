@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Implements `GetDiscoveredStoriesUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `GetDiscoveredStoriesUseCase` using repositories and async side effects.
 final class GetDiscoveredStoriesUseCaseImpl: GetDiscoveredStoriesUseCaseProtocol {
     private let userRepository: UserRepositoryProtocol
     
@@ -17,8 +20,8 @@ final class GetDiscoveredStoriesUseCaseImpl: GetDiscoveredStoriesUseCaseProtocol
     }
     
     func execute() async throws -> [Story] {
-        // TODO: Paginate discovered stories via a relational model (e.g. UserStoryDiscovery). Current path uses `user.foundStories` in memory without paging.
-        // En esta primera versión, devolvemos todas las historias encontradas del usuario actual.
+        // TODO: Paginate discovered stories via a relational model (UserStoryDiscovery). Current path uses `user.foundStories` in memory without paging.
+        // v1: return every discovered story for the current user (no pagination yet).
         guard let user = try await userRepository.getCurrentUser() else {
             return []
         }

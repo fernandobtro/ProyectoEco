@@ -6,14 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
-//  Purpose: Coordinate background story sync and notify listeners when local data may have changed.
-//
-//  Responsibilities:
-//  - Run incremental or full remote pull via `SyncWorker`, then publish through `StoryRepository`.
+//  Purpose: UI-facing sync entry: run worker, then notify story subscribers.
 //
 
 import Foundation
 
+/// Runs ``SyncWorker`` and calls `notifyStoriesUpdated()` on the story repository so map and lists can refresh.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications**.
 final class SyncStoriesUseCaseImpl: SyncStoriesUseCase {
 
     // MARK: - Dependencies

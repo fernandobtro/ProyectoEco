@@ -14,6 +14,7 @@ import Foundation
 import XCTest
 @testable import Eco
 
+@MainActor
 final class SyncPullStoriesUseCaseImplTests: XCTestCase {
 
     private static let lastSyncKey = "SyncPullStoriesUseCase.lastUpdatedAt"

@@ -4,7 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Mapeo dominio → copy y ViewData. Localización / A/B: aquí o vía strings dedicados.
+//  Purpose: Maps ``NotificationItem`` to user-facing strings, icons, and ``NotificationViewData`` / ``NotificationTapContext``.
 //
 
 import Foundation

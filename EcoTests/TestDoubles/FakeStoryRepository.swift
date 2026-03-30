@@ -23,7 +23,7 @@ final class FakeStoryRepository: StoryRepositoryProtocol {
         updatesSubject.eraseToAnyPublisher()
     }
 
-    /// Mutable backing store; tests may seed or inspect directly.
+    /// Mutable backing store, tests may seed or inspect directly.
     var stories: [Story] = []
 
     func notifyStoriesUpdated() {

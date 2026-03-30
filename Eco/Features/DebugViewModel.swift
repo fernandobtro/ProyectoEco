@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Development-only email/password probe against ``AuthRepositoryProtocol`` (prints UID or error to console).
+//
 
 import Foundation
 import Observation
 
+/// Internal tooling, not part of the shipping UX, mirrors the credential path described in `docs/EcoCorePipelines.md` — **Email Login Pipeline** without UI feedback.
 @Observable
 final class DebugViewModel {
 

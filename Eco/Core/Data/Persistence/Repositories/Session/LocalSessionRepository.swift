@@ -7,14 +7,10 @@
 //  Created by Fernando Buenrostro on 16/03/26.
 //  Purpose: Local persistence of user session metadata and profile settings using UserDefaults.
 //
-//  Responsibilities:
-//  - Provide scoped storage for user-specific settings (like nicknames) using UID-based keys.
-//  - Handle seamless migration from legacy global keys to user-scoped identifiers.
-//  - Bridge AuthRepository state with local preferences for the active session.
-//
 
 import Foundation
 
+/// Local persistence of user session metadata and profile settings using UserDefaults.
 class LocalSessionRepository: SessionRepositoryProtocol {
     private let defaults = UserDefaults.standard
     private let legacyNicknameKey = "current_eco_nickname"
@@ -24,7 +20,7 @@ class LocalSessionRepository: SessionRepositoryProtocol {
         self.authRepository = authRepository
     }
 
-    // MARK: Public API
+    // MARK: - Public API
     /// Retrieves the unique identifier for the currently authenticated user.
     /// - Returns: The Firebase UID as a `String`.
     /// - Throws: `AuthError.noAuthenticatedUser` if the user isn't signed in.
@@ -55,7 +51,7 @@ class LocalSessionRepository: SessionRepositoryProtocol {
             if let scoped = defaults.string(forKey: nicknameKey(for: uid)) {
                 return scoped
             }
-            // Migración suave desde llave legacy de versiones anteriores.
+            // Soft migration from legacy UserDefaults keys
             if let legacy = defaults.string(forKey: legacyNicknameKey) {
                 defaults.set(legacy, forKey: nicknameKey(for: uid))
                 defaults.removeObject(forKey: legacyNicknameKey)

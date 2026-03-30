@@ -11,6 +11,7 @@ import Foundation
 import XCTest
 @testable import Eco
 
+@MainActor
 final class GetPlantedStoriesUseCaseImplTests: XCTestCase {
 
     private var stories: FakeStoryRepository!

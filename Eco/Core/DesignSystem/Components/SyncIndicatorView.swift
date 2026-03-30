@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Capsule banner reflecting ``SyncStateService`` (syncing / success / error).
+//
 
 import SwiftUI
 
+/// Observes ``SyncStateService`` and shows a compact status chip when not idle.
 struct SyncIndicatorView: View {
     @Bindable var syncState: SyncStateService
 

@@ -72,9 +72,9 @@ final class SyncRetryPolicyTests: XCTestCase {
             }
             XCTFail("Expected error")
         } catch {
-            let ns = error as NSError
-            XCTAssertEqual(ns.domain, "FIRFirestoreErrorDomain")
-            XCTAssertEqual(ns.code, 7)
+            let nsError = error as NSError
+            XCTAssertEqual(nsError.domain, "FIRFirestoreErrorDomain")
+            XCTAssertEqual(nsError.code, 7)
         }
     }
 }

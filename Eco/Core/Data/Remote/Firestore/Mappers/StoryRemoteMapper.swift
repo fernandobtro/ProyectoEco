@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Maps Firestore payloads - domain `Story` (`StoryRemoteMapper`).
+//
 
 import Foundation
 
+/// Maps Firestore payloads domain `Story` (`StoryRemoteMapper`).
 enum StoryRemoteMapper {
     static func toEntity(_ dto: RemoteStoryDTO, existing: StoryEntity?) -> StoryEntity {
         if let existing {
@@ -20,11 +23,11 @@ enum StoryRemoteMapper {
             existing.remoteId = dto.remoteId
             existing.updatedAt = dto.updatedAt
             existing.deletedAt = dto.deletedAt
-            existing.syncStatus = SyncStatus.synced.rawValue
+            existing.syncStatus = .synced
             return existing
         } else {
-            // para mantenerlo simple, usamos un `UUID()` local para `id` cuando viene de remoto y no existe aún. Más adelante podemos definir una estrategia más fina de “merge” si quieres (por ejemplo, guardar un mapping remoto→local).
-            return StoryEntity(id: UUID(), title: dto.title, content: dto.content, authorID: dto.authorId, latitude: dto.latitude, longitude: dto.longitude, remoteId: dto.remoteId, syncStatus: SyncStatus.synced.rawValue, updatedAt: dto.updatedAt, deletedAt: dto.deletedAt)
+            // Simple path: allocate a fresh local UUID when the row is new from remote, refine merge/mapping later if needed.
+            return StoryEntity(id: UUID(), title: dto.title, content: dto.content, authorID: dto.authorId, latitude: dto.latitude, longitude: dto.longitude, remoteId: dto.remoteId, syncStatus: .synced, updatedAt: dto.updatedAt, deletedAt: dto.deletedAt)
         }
     }
 }

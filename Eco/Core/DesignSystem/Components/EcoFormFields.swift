@@ -4,26 +4,27 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Campos de formulario reutilizables: placeholder legible sobre fondo accent y texto con primaryText.
+//  Purpose: Reusable form fields: readable placeholder on accent backgrounds, text uses `primaryText`.
 //
 
 import SwiftUI
 import UIKit
 
+/// Opacity for prompt text so it reads clearly on green accent without using the accent tint.
 enum EcoFormFieldMetrics {
-    /// Placeholder con primaryText semitransparente para que no se confunda con el verde del fondo.
+    /// Semi-transparent `primaryText` for placeholders (distinct from the accent fill).
     static let placeholderOpacity: Double = 0.55
 }
 
-/// Campo de texto con estilo Eco y `prompt` estilizado (evita el tint accent en el placeholder).
+/// Styled `TextField` with a custom `prompt` (avoids system accent tint on placeholder text).
 struct EcoTextField: View {
     private var placeholder: LocalizedStringKey
     private var accessibilityLabelKey: LocalizedStringKey?
     @Binding private var text: String
     private var textInputAutocapitalization: TextInputAutocapitalization
-    /// No nombrar `keyboardType`: choca con el modificador `View.keyboardType`.
+    /// Named `uiKeyboardType` to avoid clashing with `View.keyboardType`.
     private var uiKeyboardType: UIKeyboardType
-    /// No nombrar `textContentType`: choca con el modificador `View.textContentType`.
+    /// Named `uiTextContentType` to avoid clashing with `View.textContentType`.
     private var uiTextContentType: UITextContentType?
 
     init(
@@ -57,7 +58,7 @@ struct EcoTextField: View {
     }
 }
 
-/// Campo seguro con el mismo criterio de placeholder que `EcoTextField`.
+/// Secure field using the same placeholder styling as ``EcoTextField``.
 struct EcoSecureField: View {
     private var placeholder: LocalizedStringKey
     private var accessibilityLabelKey: LocalizedStringKey?

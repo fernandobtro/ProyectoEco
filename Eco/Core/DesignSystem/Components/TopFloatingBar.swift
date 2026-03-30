@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Floating header strip with profile / notifications actions (Eco chrome).
+//
 
 import Foundation
 import SwiftUI
 
+/// Rounded leading capsule with icon buttons, used over map/collection chrome.
 struct TopFloatingBar: View {
     var onButtonTap: (FloatingBar) -> Void
     
@@ -25,16 +28,16 @@ struct TopFloatingBar: View {
                 }
             }
         }
-        .padding(.leading, 20) // Espacio interno izquierdo
-        .padding(.trailing, 16) // Espacio interno derecho
+        .padding(.leading, 20)
+        .padding(.trailing, 16)
         .padding(.vertical, 12)
         .background {
-            // Figura plana de la derecha y redonda de la izquierda
+            // Flat trailing edge, rounded leading corners
             UnevenRoundedRectangle(topLeadingRadius: 35, bottomLeadingRadius: 35)
                 .fill(Color.theme.accent)
                 .shadow(color: .black.opacity(0.15), radius: 8, x: -2, y: 4)
         }
-        // Solo dejamos padding arriba, a la derecha queda en 0 para pegar al borde
+        // Top inset only, trailing edge aligns flush with the screen
         .padding(.top, 16)
     }
 }

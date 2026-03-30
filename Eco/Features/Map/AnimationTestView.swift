@@ -6,9 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 26/03/26.
 //
+//  Purpose: Full-screen planting celebration overlay (seed flight - sprout), invoked from the map after plant success.
+//
 
 import SwiftUI
 
+/// Staged animation shown over the map when a story is planted, calls `onCompleted` when the sequence ends.
+///
+/// See `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline** (plant feedback).
 struct PlantingAnimationOverlay: View {
     let onCompleted: () -> Void
 
@@ -18,7 +23,7 @@ struct PlantingAnimationOverlay: View {
     @State private var seedScale: CGFloat = 1.8
     @State private var seedShadow: CGFloat = 20
     @State private var plantScale: CGFloat = 0
-    /// Landing point for seed and plant; derived from the overlay’s layout, not `UIScreen.main`.
+    /// Landing point for seed and plant, derived from the overlay’s layout, not `UIScreen.main`.
     @State private var animationTargetPoint: CGPoint = .zero
 
     enum AnimationStage {

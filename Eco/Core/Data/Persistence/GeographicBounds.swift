@@ -6,9 +6,6 @@
 //
 //  Purpose: Approximate lat/lon bounding boxes from a center point and radius in meters.
 //
-//  Responsibilities:
-//  - Provide conservative rectangles for SwiftData predicates before precise distance filters.
-//
 
 import Foundation
 
@@ -23,7 +20,7 @@ struct GeographicBoundingBox: Equatable {
 enum GeographicBounds {
 
     /// Returns a geographic rectangle that fully contains a circle of `radiusMeters` around the center.
-    /// Uses a spherical approximation; not exact at poles but sufficient for Eco’s latitudes.
+    /// Uses a spherical approximation, not exact at poles but sufficient for Eco’s latitudes.
     static func boundingBox(
         centerLatitude: Double,
         centerLongitude: Double,

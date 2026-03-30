@@ -6,23 +6,25 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Backoff rules for failed sync attempts.
+//
 
 import Foundation
 
-/// Política de reintentos para operaciones de sync.
-struct SyncRetryPolicy {
+/// Exponential backoff caps for sync retries.
+struct SyncRetryPolicy: Sendable {
     let maxRetries: Int
     let baseDelay: TimeInterval
     let maxDelay: TimeInterval
 
-    static let `default` = SyncRetryPolicy(
+    nonisolated static let `default` = SyncRetryPolicy(
         maxRetries: 3,
         baseDelay: 1.0,
         maxDelay: 30.0
     )
 }
 
-/// Errores que NO deben reintentarse (permanentes).
+/// Firestore (and related) errors that should not trigger another sync attempt.
 private func isPermanentSyncError(_ error: Error) -> Bool {
     let nsError = error as NSError
     // Firebase Firestore: permission denied, unauthenticated, invalid argument
@@ -34,14 +36,14 @@ private func isPermanentSyncError(_ error: Error) -> Bool {
             break
         }
     }
-    // Errores envueltos
+    // Nested NSError chains
     if let underlying = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
         return isPermanentSyncError(underlying)
     }
     return false
 }
 
-/// Determina si un error es reintentable (red, timeout) vs permanente (validación, auth).
+/// `true` for transient network / Firestore unavailable errors, `false` for auth or validation failures.
 func isRetryableSyncError(_ error: Error) -> Bool {
     guard !isPermanentSyncError(error) else { return false }
 
@@ -56,21 +58,21 @@ func isRetryableSyncError(_ error: Error) -> Bool {
         }
     }
     let nsError = error as NSError
-    // Firebase Firestore UNAVAILABLE (14) = servicio temporalmente no disponible
+    // Firestore UNAVAILABLE (14) — transient outage
     if nsError.domain == "FIRFirestoreErrorDomain" && nsError.code == 14 {
         return true
     }
     if nsError.domain == NSURLErrorDomain {
         return true
     }
-    // Errores envueltos (Firebase puede envolver URLError)
+    // Unwrap nested errors (Firebase may wrap `URLError`)
     if let underlying = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
         return isRetryableSyncError(underlying)
     }
     return false
 }
 
-/// Ejecuta una operación con reintentos y exponential backoff.
+/// Runs `body` with exponential backoff until success or a non-retryable error.
 func retryWithBackoff<T>(
     policy: SyncRetryPolicy = .default,
     operation: String,
@@ -89,7 +91,7 @@ func retryWithBackoff<T>(
                 policy.baseDelay * pow(2.0, Double(attempt)),
                 policy.maxDelay
             )
-            print("🔄 [SYNC RETRY] \(operation) attempt \(attempt + 1)/\(policy.maxRetries + 1) failed, retry in \(String(format: "%.1f", delay))s: \(error.localizedDescription)")
+            print("[SYNC RETRY] \(operation) attempt \(attempt + 1)/\(policy.maxRetries + 1) failed, retry in \(String(format: "%.1f", delay))s: \(error.localizedDescription)")
             try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
         }
     }

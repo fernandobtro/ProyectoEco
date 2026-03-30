@@ -6,20 +6,23 @@
 //
 //  Created by Fernando Buenrostro on 28/02/26.
 //
+//  Purpose: Shared error surface (`EcoError`) for domain and data layers.
+//
 
 import Foundation
 
+/// Shared error surface (`EcoError`) for domain and data layers.
 enum EcoError: Error, LocalizedError {
     
-    // Ubicación
+    // Location
     case locationPermissionDenied
     case locationServicesDisabled
     
-    // Persistencia
+    // Persistence
     case storageFailed
     case storyNotFound
     
-    // Identidad/Seguridad
+    // Identity / security
     case unauthorizedAction
     
     // Networking

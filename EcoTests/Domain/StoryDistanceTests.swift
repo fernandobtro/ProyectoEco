@@ -30,7 +30,6 @@ final class StoryDistanceTests: XCTestCase {
     }
 
     func testDistanceToOneDegreeNorthIsRoughlyOneHundredElevenKilometers() {
-        // ~111 km per degree of latitude (equator-independent); good sanity check for haversine path.
         let story = StoryBuilder.make(latitude: 0, longitude: 0)
         let location = CLLocation(latitude: 1, longitude: 0)
 

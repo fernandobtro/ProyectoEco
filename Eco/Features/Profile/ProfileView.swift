@@ -6,9 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Signed-in author profile: nickname, identity fields, save, logout.
+//
 
 import SwiftUI
 
+/// Sheet or full-screen profile editor driven by ``ProfileViewModel``.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (author profile after authentication).
 struct ProfileView: View {
     @Bindable var viewModel: ProfileViewModel
     @Environment(\.dismiss) private var dismiss

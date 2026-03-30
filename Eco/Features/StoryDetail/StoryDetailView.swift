@@ -6,11 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Full-screen read and manage flow for one Eco, including map context and actions.
-//
-//  Responsibilities:
-//  - Show title, body, distance, author line, and map preview when it makes sense.
-//  - Offer read, edit, delete, and navigation back while keeping the viewModel in charge of data.
+//  Purpose: Full-screen read/manage for one Eco: content, map preview, author edit/delete, loading and errors.
 //
 
 import CoreLocation
@@ -18,6 +14,8 @@ import MapKit
 import SwiftUI
 
 /// Detail screen for one Eco: loading and error states, locked vs unlocked content, and author actions.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Story Detail (Read / Unlock / Edit / Delete) Pipeline**.
 struct StoryDetailView: View {
 
     // MARK: - Properties
@@ -172,7 +170,7 @@ struct StoryDetailView: View {
         }
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
 
     /// Card explaining that the reader must move closer physically to reveal the full Eco content.
     @ViewBuilder

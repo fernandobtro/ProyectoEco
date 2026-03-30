@@ -4,12 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: One page of stories for paginated list flows (e.g. Collection planted tab).
+//  Purpose: Paginated slice of stories plus continuation flag.
 //
 
 import Foundation
 
-/// A single page of ``Story`` values plus whether more pages exist (see `GetPlantedStoriesUseCase`).
+/// One page of ``Story`` values and whether another page exists after this slice.
+///
+/// Produced by ``GetPlantedStoriesUseCaseProtocol``, context in `docs/EcoCorePipelines.md` — **Collection** pipeline.
 struct StoriesPage: Equatable {
     let items: [Story]
     let hasMore: Bool

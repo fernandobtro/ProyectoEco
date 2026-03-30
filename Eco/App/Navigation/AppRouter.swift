@@ -4,24 +4,21 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Global routing for deep links and notification handoff before or after `RootView` is ready.
-//
-//  Responsibilities:
-//  - Hold the active story id, one-shot pending ids, and open-map flags for cold launch and runtime.
-//  - Map `DeepLink` cases into observable state and expose consume-once helpers for startup.
+//  Purpose: Observable story-id and open-map flags for cold launch, notifications, and `DeepLink` handling.
 //
 
 import Foundation
 import Observation
 
 // MARK: - Router
+/// Singleton router, `RootView` and `AppDelegate` consume pending ids once the UI is ready.
 @MainActor
 @Observable
 final class AppRouter {
-    // MARK: - Shared access
+    // MARK: - Shared Access
     static let shared = AppRouter()
 
-    // MARK: - Navigation state
+    // MARK: - Navigation State
     var activeStoryID: String?
     private(set) var pendingStoryID: String?
     var openMapRequested = false
@@ -30,7 +27,7 @@ final class AppRouter {
     // MARK: - Init
     private init() {}
 
-    // MARK: - Public navigation methods
+    // MARK: - Public Navigation
     func handle(_ deepLink: DeepLink) {
         switch deepLink {
         case .storyDetail(let id):

@@ -6,7 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 26/03/26.
 //
-//  Purpose: Unit tests for `StoryPersistenceMapper` (SwiftData row ↔ domain `Story`).
+//  Purpose: Unit tests for `StoryPersistenceMapper` (SwiftData row - domain `Story`).
 //
 //  Responsibilities:
 //  - Cover `isSynced` derivation from `syncStatus` and `deletedAt`.
@@ -21,7 +21,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
 
     private let fixedDate = Date(timeIntervalSince1970: 1_700_000_000)
 
-    // MARK: - toDomain
+    // MARK: - To Domain
 
     func testToDomain_syncedWithoutDeletion_isSyncedTrue() {
         let entity = StoryEntity(
@@ -32,7 +32,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
             latitude: 1,
             longitude: 2,
             remoteId: "remote",
-            syncStatus: SyncStatus.synced.rawValue,
+            syncStatus: .synced,
             updatedAt: fixedDate,
             deletedAt: nil
         )
@@ -53,7 +53,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
             latitude: 0,
             longitude: 0,
             remoteId: "r",
-            syncStatus: SyncStatus.synced.rawValue,
+            syncStatus: .synced,
             updatedAt: fixedDate,
             deletedAt: fixedDate
         )
@@ -71,7 +71,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
             authorID: "a1",
             latitude: 0,
             longitude: 0,
-            syncStatus: SyncStatus.pendingCreate.rawValue,
+            syncStatus: .pendingCreate,
             updatedAt: fixedDate,
             deletedAt: nil
         )
@@ -79,7 +79,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
         XCTAssertFalse(StoryPersistenceMapper.toDomain(entity).isSynced)
     }
 
-    // MARK: - toEntity
+    // MARK: - To Entity
 
     func testToEntity_withoutExisting_createsPendingCreateRow() {
         let id = UUID()
@@ -97,7 +97,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
         let entity = StoryPersistenceMapper.toEntity(story, existing: nil)
 
         XCTAssertEqual(entity.id, id)
-        XCTAssertEqual(entity.syncStatus, SyncStatus.pendingCreate.rawValue)
+        XCTAssertEqual(entity.syncStatus, .pendingCreate)
         XCTAssertNil(entity.remoteId)
         XCTAssertNil(entity.deletedAt)
         XCTAssertEqual(entity.title, "New")
@@ -114,7 +114,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
             latitude: 0,
             longitude: 0,
             remoteId: "remote-1",
-            syncStatus: SyncStatus.synced.rawValue,
+            syncStatus: .synced,
             updatedAt: Date(timeIntervalSince1970: 1),
             deletedAt: nil
         )
@@ -131,7 +131,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
         let result = StoryPersistenceMapper.toEntity(story, existing: existing)
 
         XCTAssertTrue(result === existing)
-        XCTAssertEqual(existing.syncStatus, SyncStatus.pendingUpdate.rawValue)
+        XCTAssertEqual(existing.syncStatus, .pendingUpdate)
         XCTAssertEqual(existing.title, "Edited")
         XCTAssertEqual(existing.content, "Edited body")
         XCTAssertEqual(existing.latitude, 10)
@@ -149,7 +149,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
             authorID: "auth",
             latitude: 0,
             longitude: 0,
-            syncStatus: SyncStatus.pendingCreate.rawValue,
+            syncStatus: .pendingCreate,
             updatedAt: Date(timeIntervalSince1970: 1),
             deletedAt: nil
         )
@@ -157,7 +157,7 @@ final class StoryPersistenceMapperTests: XCTestCase {
         let story = StoryBuilder.make(id: id, title: "New title", updatedAt: fixedDate)
         _ = StoryPersistenceMapper.toEntity(story, existing: existing)
 
-        XCTAssertEqual(existing.syncStatus, SyncStatus.pendingCreate.rawValue)
+        XCTAssertEqual(existing.syncStatus, .pendingCreate)
         XCTAssertEqual(existing.title, "New title")
     }
 }

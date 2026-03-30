@@ -6,9 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 28/02/26.
 //
+//  Purpose: Persist a new story for the current user and trigger follow-up sync work.
+//
 
 import Foundation
 
+/// Creates a local story row for the signed-in author and starts a best-effort cloud sync of the user profile (failures are non-fatal).
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Plant Story Pipeline**.
 final class PlantStoryUseCaseImpl: PlantStoryUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
     private let userRepository: UserRepositoryProtocol

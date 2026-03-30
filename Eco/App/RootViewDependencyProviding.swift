@@ -6,10 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
-//  Purpose: Narrow protocol so `RootView` depends on factories instead of the full app container.
-//
-//  Responsibilities:
-//  - Expose ViewModels, routers, services, and profile UI needed by the root shell and deeplink detail flow.
+//  Purpose: Factory surface for ``RootView`` (map, collection, profile, notifications, deep-link detail).
 //
 
 import Foundation
@@ -32,7 +29,7 @@ protocol RootViewDependencyProviding: AnyObject {
     /// Shared sync status for global UI (for example a sync indicator).
     func makeSyncStateService() -> SyncStateService
 
-    /// Profile tab; `onClose` is used when the profile is presented as a sheet.
+    /// Profile tab, `onClose` is used when the profile is presented as a sheet.
     func makeProfileView(onClose: (() -> Void)?) -> ProfileView
 
     /// Notifications list ViewModel.

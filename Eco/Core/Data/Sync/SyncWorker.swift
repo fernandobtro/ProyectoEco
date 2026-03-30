@@ -6,11 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
-//  Purpose: Orchestrate local-to-remote story sync (push pending rows, pull remote changes) and surface sync UI state.
-//
-//  Responsibilities:
-//  - Push creates, updates, and deletes for pending SwiftData rows via Firestore.
-//  - Pull remote deltas or a full snapshot, with optional retry and sync status callbacks.
+//  Purpose: Push local story changes to Firestore, then pull remote updates (with optional retry and UI status).
 //
 
 import Foundation
@@ -28,6 +24,9 @@ protocol SyncWorkerProtocol {
 }
 
 // MARK: - SyncWorker
+/// Performs push-then-pull story synchronization against Firestore and optional ``SyncStateService`` updates.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications**.
 final class SyncWorker: SyncWorkerProtocol {
 
     // MARK: - Dependencies
@@ -74,20 +73,20 @@ final class SyncWorker: SyncWorkerProtocol {
         }
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
     /// Uploads pending create, update, and delete rows from local storage in order.
     private func pushPendingChanges() async throws {
         let pendingStories = try await localDataSource.fetchPending()
 
         for story in pendingStories {
-            switch SyncStatus(rawValue: story.syncStatus) {
+            switch story.syncStatus {
             case .pendingCreate:
                 try await handlePendingCreate(story)
             case .pendingUpdate:
                 try await handlePendingUpdate(story)
             case .pendingDelete:
                 try await handlePendingDelete(story)
-            default:
+            case .synced:
                 break
             }
         }
@@ -104,7 +103,7 @@ final class SyncWorker: SyncWorkerProtocol {
 
     /// Creates the document in Firestore, assigns `remoteId`, marks the row synced, and persists locally.
     private func handlePendingCreate(_ story: StoryEntity) async throws {
-        guard SyncStatus(rawValue: story.syncStatus) == .pendingCreate else { return }
+        guard story.syncStatus == .pendingCreate else { return }
 
         do {
             let remoteId = try await retryWithBackoff(policy: retryPolicy, operation: "CREATE id:\(story.id)") {
@@ -120,7 +119,7 @@ final class SyncWorker: SyncWorkerProtocol {
             }
 
             story.remoteId = remoteId
-            story.syncStatus = SyncStatus.synced.rawValue
+            story.syncStatus = .synced
 
             try await localDataSource.saveChanges()
 
@@ -137,7 +136,7 @@ final class SyncWorker: SyncWorkerProtocol {
 
     /// Merges the story into its remote document when `remoteId` is set, then marks synced and saves locally.
     private func handlePendingUpdate(_ story: StoryEntity) async throws {
-        guard SyncStatus(rawValue: story.syncStatus) == .pendingUpdate else { return }
+        guard story.syncStatus == .pendingUpdate else { return }
 
         do {
             try await retryWithBackoff(policy: retryPolicy, operation: "UPDATE id:\(story.id)") {
@@ -152,7 +151,7 @@ final class SyncWorker: SyncWorkerProtocol {
                 ))
             }
 
-            story.syncStatus = SyncStatus.synced.rawValue
+            story.syncStatus = .synced
             try await localDataSource.saveChanges()
             syncWorkerLogger.info("UPDATE success storyId=\(story.id.uuidString, privacy: .public)")
         } catch {
@@ -165,7 +164,7 @@ final class SyncWorker: SyncWorkerProtocol {
 
     /// Soft-deletes on Firestore when `remoteId` exists, then always removes the local row (hard delete).
     private func handlePendingDelete(_ story: StoryEntity) async throws {
-        guard SyncStatus(rawValue: story.syncStatus) == .pendingDelete else { return }
+        guard story.syncStatus == .pendingDelete else { return }
 
         do {
             if let remoteId = story.remoteId {

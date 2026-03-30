@@ -4,16 +4,18 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Map discovery mode and visible lat/lon bounds (Domain only, no MapKit types).
+//
 
 import Foundation
 
-/// Modo de descubrimiento en mapa (producto: «cerca de mí» vs «explorar»).
+/// Product mode: follow user vs pan-to-explore visible area.
 enum MapDiscoveryMode: String, Sendable {
     case nearUser
     case exploring
 }
 
-/// Rectángulo geográfico visible (sin MapKit en Domain).
+/// Axis-aligned bounds for queries (mirrors visible map region without importing MapKit).
 struct MapVisibleBounds: Equatable, Sendable {
     var minLatitude: Double
     var maxLatitude: Double

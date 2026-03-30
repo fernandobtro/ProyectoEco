@@ -7,12 +7,10 @@
 //  Created by Fernando Buenrostro on 16/03/26.
 //
 //  Purpose: Domain-specific Use Case for onboarding new users.
-//  Responsibilities:
-//  - Interface with the Auth Repository to create a new unique identity.
-//  - Provide the initial UID needed for local profile bootstrapping.
 
 import Foundation
 
+/// Domain-specific Use Case for onboarding new users.
 final class RegisterUseCaseImpl: RegisterUseCaseProtocol {
     private let repository: AuthRepositoryProtocol
     

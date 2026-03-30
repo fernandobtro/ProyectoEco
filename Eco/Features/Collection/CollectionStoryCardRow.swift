@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Tarjeta Colección: título + extracto dentro del bloque crema; pie (fecha · ubicación) fuera y alineado a la izquierda.
+//  Purpose: List row card: title and excerpt in the cream block, footer (date · location) outside, leading-aligned.
 //
 
 import SwiftUI
 
+/// Single story row for Collection lists, backed by ``StoryViewData``.
 struct CollectionStoryCardRow: View {
     let viewData: StoryViewData
 

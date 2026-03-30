@@ -4,11 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Wires the app together, SwiftData, repositories, use cases, and screen factories.
-//
-//  Responsibilities:
-//  - Own the shared model container and services used across features.
-//  - Expose make factories so views get dependencies without knowing implementation details.
+//  Purpose: Composition root: SwiftData, remote/local data, use cases, and `make*` screen factories.
 //
 
 import CoreLocation
@@ -22,7 +18,7 @@ final class AppDIContainer {
     /// Shared SwiftData store for every data source in this container.
     let modelContainer: ModelContainer
 
-    // MARK: - Data sources
+    // MARK: - Data Sources
     private lazy var storyDataSource: StoryLocalDataSourceProtocol = {
         SwiftDataStoryDataSource(modelContext: modelContainer.mainContext)
     }()
@@ -74,7 +70,7 @@ final class AppDIContainer {
         LocalSessionRepository(authRepository: authRepository)
     }()
 
-    // MARK: - Core services
+    // MARK: - Core Services
     private lazy var locationService: LocationServiceProtocol = {
         LocationService()
     }()
@@ -98,7 +94,7 @@ final class AppDIContainer {
         GetStoriesForGeofencingUseCaseImpl(storyRepository: storyRepository)
     }()
 
-    // MARK: - Use cases
+    // MARK: - Use Cases
     
     private let mapDiscoveryConfig = MapDiscoveryConfig.default
 
@@ -253,7 +249,7 @@ final class AppDIContainer {
     }
 }
 
-// MARK: - View model factories
+// MARK: - View Model Factories
 
 @MainActor
 extension AppDIContainer {
@@ -365,7 +361,7 @@ extension AppDIContainer {
         locationService
     }
 
-    /// Syncs stories with the server; waits if a sync is already running.
+    /// Syncs stories with the server, waits if a sync is already running.
     func triggerSync() async {
         guard !isSyncing else { return }
         isSyncing = true
@@ -378,7 +374,7 @@ extension AppDIContainer {
         syncStateService
     }
 
-    /// For deep links: turns a string id into a `UUID` if the story exists; syncs once if it isn’t on disk yet.
+    /// For deep links: turns a string id into a `UUID` if the story exists, syncs once if it isn’t on disk yet.
     func resolveStoryIdForDeepLink(_ storyId: String) async -> UUID? {
         guard let uuid = UUID(uuidString: storyId) else { return nil }
         if (try? await storyRepository.fetchStory(by: uuid)) != nil {

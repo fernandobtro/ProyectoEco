@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Registers the user then seeds an ``AuthorProfile`` via ``CreateAuthorProfileUseCase``.
+//
 
 import Foundation
 import Observation
 
+/// Orchestrates sign-up and initial author profile creation for email registration.
 @Observable
 final class RegisterViewModel {
     

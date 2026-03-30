@@ -4,11 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Paints the map experience, pins, overlays, and the selected story callout.
-//
-//  Responsibilities:
-//  - Render the map, pins, camera updates, and taps on the map versus pins.
-//  - Layer recenter, hints, location denied, planting animation, and the story reader entry points.
+//  Purpose: Map UI: pins, camera, overlays, recenter, planting animation, and reader/callout entry points.
 //
 
 import SwiftUI
@@ -16,8 +12,11 @@ import MapKit
 import CoreLocation
 import UIKit
 
+/// Root map tab: annotations, selected-story UI, and `MapRouter`-driven sheets.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline**.
 struct MapView: View {
-    // MARK: - State and navigation
+    // MARK: - State and Navigation
     @State var viewModel: MapViewModel
     @State var router: MapRouter
 
@@ -70,7 +69,7 @@ struct MapView: View {
         }
     }
 
-    // MARK: - Map components (annotations)
+    // MARK: - Map and Annotations
     @ViewBuilder
     private func mapWithAnnotations(
         cameraPosition: Binding<MapKit.MapCameraPosition>,
@@ -225,7 +224,7 @@ struct MapView: View {
         .transition(.opacity)
     }
 
-    // MARK: - Sub-components
+    // MARK: - Subviews
     @ViewBuilder
     private func mapStoryCallout(story: Story) -> some View {
         VStack(alignment: .leading, spacing: 10) {

@@ -7,13 +7,11 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //  Purpose: SwiftData model representing the authenticated user's local profile and story associations.
 //
-//  Responsibilities:
-//  - Persist unique user identity (UID), basic profile data, and relational story identifiers.
-//  - Act as the local schema for SwiftData storage, decoupled from the domain 'User' model.
 
 import Foundation
 import SwiftData
 
+/// SwiftData model representing the authenticated user's local profile and story associations.
 @Model
 class UserEntity {
     @Attribute(.unique) var id: String

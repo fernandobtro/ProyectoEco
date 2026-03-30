@@ -17,7 +17,7 @@ import Foundation
 
 enum UserBuilder {
 
-    /// Builds a `User` with deterministic defaults; override only what the test cares about.
+    /// Builds a `User` with deterministic defaults, override only what the test cares about.
     static func make(
         id: String = "user-test",
         name: String = "Test User",

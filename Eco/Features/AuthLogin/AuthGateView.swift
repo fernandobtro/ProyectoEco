@@ -6,15 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Navigation gatekeeper that orchestrates the authentication flow and onboarding.
-//  Responsabilities:
-//  - Switch between SplashScreen, Unauthenticated (Welcome, Login, Social), and Authenticated states.
-//  - Manage the inactivity timeout policy to ensure session security.
-// - Coordinate location permission onboarding as a post-auth step.
+//  Purpose: Root auth gate: splash, sign-in flows, nickname onboarding, main app shell.
+//
 
 import Foundation
 import SwiftUI
 
+/// Auth sequence context: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (and related onboarding).
 struct AuthGateView: View {
     
     // MARK: - Dependencies
@@ -100,7 +98,7 @@ struct AuthGateView: View {
                     viewModel.completeNicknameOnboarding(with: name)
                 }
 
-            case .authenticated(_):
+            case .authenticated:
                 ZStack {
                     RootView(container: container)
                         .syncOnReconnect { await container.triggerSync() }
@@ -152,7 +150,7 @@ struct AuthGateView: View {
 
     // MARK: - Private Helpers
     
-    /// Lazy loads the SocialAuthViewModel only when the user enters the authentication flow.
+    /// Creates ``SocialAuthViewModel`` on first entry into the unauthenticated flow (avoids constructing it during splash).
     private func ensureSocialAuthViewModel() {
         if socialAuthViewModel == nil {
             socialAuthViewModel = container.makeSocialAuthViewModel()

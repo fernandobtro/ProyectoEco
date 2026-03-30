@@ -8,13 +8,11 @@
 //
 //  Purpose: Domain-specific authentication errors and Firebase to Domain error mapping.
 //
-//  Responsabilities:
-//  - Define a clean set of errrors that the UI can understand without Firebase dependencies.
-//  - Provide a mapping function to translate errors into human readable domain cases.
 
 import Foundation
 import FirebaseAuth
 
+/// Domain-specific authentication errors and Firebase to Domain error mapping.
 enum AuthError: Error {
     case noAuthenticatedUser
     case invalidCredentials

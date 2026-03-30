@@ -4,11 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Implements `GetCurrentLocationForPlantingUseCase` using repositories and async side effects.
+//
 
 import Combine
 import CoreLocation
 import Foundation
 
+/// Implements `GetCurrentLocationForPlantingUseCase` using repositories and async side effects.
 final class GetCurrentLocationForPlantingUseCaseImpl: GetCurrentLocationForPlantingUseCaseProtocol {
     private let locationService: LocationServiceProtocol
 

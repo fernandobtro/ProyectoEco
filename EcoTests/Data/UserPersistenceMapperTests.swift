@@ -6,7 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 26/03/26.
 //
-//  Purpose: Unit tests for `UserPersistenceMapper` (SwiftData row ↔ domain `User`).
+//  Purpose: Unit tests for `UserPersistenceMapper` (SwiftData row - domain `User`).
 //
 //  Responsibilities:
 //  - Verify domain hydration attaches caller-provided story lists.
@@ -44,18 +44,18 @@ final class UserPersistenceMapperTests: XCTestCase {
     }
 
     func testToEntity_mapsStoryIdsInOrder() {
-        let s1 = StoryBuilder.make()
-        let s2 = StoryBuilder.make()
-        let s3 = StoryBuilder.make()
+        let firstPlantedStory = StoryBuilder.make()
+        let secondPlantedStory = StoryBuilder.make()
+        let foundStory = StoryBuilder.make()
         let user = UserBuilder.make(
-            plantedStories: [s1, s2],
-            foundStories: [s3]
+            plantedStories: [firstPlantedStory, secondPlantedStory],
+            foundStories: [foundStory]
         )
 
         let entity = UserPersistenceMapper.toEntity(user)
 
         XCTAssertEqual(entity.id, user.id)
-        XCTAssertEqual(entity.plantedStoryIDs, [s1.id, s2.id])
-        XCTAssertEqual(entity.foundStoryIDs, [s3.id])
+        XCTAssertEqual(entity.plantedStoryIDs, [firstPlantedStory.id, secondPlantedStory.id])
+        XCTAssertEqual(entity.foundStoryIDs, [foundStory.id])
     }
 }

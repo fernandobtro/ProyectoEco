@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Email/password registration form paired with ``RegisterViewModel``.
+//
 
 import SwiftUI
 
+/// Registration UI, links back to login via `onLoginTap`.
 struct RegisterView: View {
     @Bindable var viewModel: RegisterViewModel
     let onLoginTap: () -> Void

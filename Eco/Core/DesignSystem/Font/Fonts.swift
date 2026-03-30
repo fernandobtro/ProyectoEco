@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Poppins font registration helpers for SwiftUI `Font`.
+//
 
 import Foundation
 import SwiftUI
 
+/// Custom Poppins weights bundled with the app target.
 extension Font {
     enum PoppinsWeight: String {
         case regular = "Poppins-Regular"

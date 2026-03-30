@@ -6,10 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
-//  Purpose: Lightweight dependency container for SwiftUI Previews without Firebase or real network.
-//
-//  Responsibilities:
-//  - Expose shared preview ViewModels, routers, and in-memory mocks for canvas-driven development.
+//  Purpose: DEBUG-only ``RootViewDependencyProviding`` with stubs for canvas previews (no Firebase).
 //
 
 #if DEBUG
@@ -28,7 +25,7 @@ final class PreviewRootViewDependencyContainer: RootViewDependencyProviding {
 
     private init() {}
 
-    // MARK: - Cached dependencies
+    // MARK: - Cached Dependencies
 
     private lazy var mapViewModel: MapViewModel = {
         MapViewModel(
@@ -112,13 +109,13 @@ final class PreviewRootViewDependencyContainer: RootViewDependencyProviding {
         )
     }
 
-    /// Parses a UUID string for preview deep links; returns nil when the string is invalid.
+    /// Parses a UUID string for preview deep links, returns nil when the string is invalid.
     func resolveStoryIdForDeepLink(_ storyId: String) async -> UUID? {
         UUID(uuidString: storyId)
     }
 }
 
-// MARK: - Preview mocks
+// MARK: - Preview Mocks
 
 private final class PreviewDiscoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol {
     func nearbyStories() -> AsyncStream<[Story]> {

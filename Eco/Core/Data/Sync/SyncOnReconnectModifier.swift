@@ -6,13 +6,15 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: SwiftUI modifier to trigger sync when network returns.
+//
 
 import SwiftUI
 
-/// Debounce en ms para evitar múltiples triggers (wifi↔cellular, online→online).
+/// Debounce window to avoid duplicate triggers (Wi‑Fi - cellular, flapping online).
 private let reconnectDebounceMs: UInt64 = 500
 
-/// Modificador que dispara sync cuando la red vuelve a estar disponible.
+/// Runs `onSync` when connectivity returns after an offline period.
 struct SyncOnReconnectModifier: ViewModifier {
     let onSync: () async -> Void
 
@@ -51,7 +53,7 @@ struct SyncOnReconnectModifier: ViewModifier {
 }
 
 extension View {
-    /// Dispara `onSync` cuando la red pasa de offline a online.
+    /// Invokes `onSync` when connectivity returns after being offline.
     func syncOnReconnect(onSync: @escaping () async -> Void) -> some View {
         modifier(SyncOnReconnectModifier(onSync: onSync))
     }

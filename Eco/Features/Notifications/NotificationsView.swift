@@ -4,11 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Registro local de avisos; estética panel (mismo fondo que Perfil), lista con divisores crema.
+//  Purpose: In-app list of logged notification events (local log), profile-style chrome, row tap routing via `onItemTap`.
 //
 
 import SwiftUI
 
+/// Driven by ``NotificationsViewModel``, `onItemTap` should open map or story detail using ``NotificationTapContext``.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications** (in-app notification log).
 struct NotificationsView: View {
     @Bindable var viewModel: NotificationsViewModel
     let onItemTap: (NotificationViewData) -> Void

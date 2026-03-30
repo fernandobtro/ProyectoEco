@@ -6,6 +6,8 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Sheet to compose and plant a story at the current map location (preview map + title/body).
+//
 
 import CoreLocation
 import MapKit
@@ -16,6 +18,9 @@ private enum StoryCreationFocusedField: Hashable {
     case content
 }
 
+/// Presented from ``RootView`` / ``MapRouter``, `onPlantingSuccess` passes coordinate and new story id for map animation.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Plant Story Pipeline**.
 struct StoryCreationView: View {
     @Bindable var viewModel: StoryCreationViewModel
     @Environment(\.dismiss) var dismiss
@@ -36,11 +41,14 @@ struct StoryCreationView: View {
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(Color.theme.primaryText.opacity(0.8))
-                    }
+                    Button(
+                        action: { dismiss() },
+                        label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(Color.theme.primaryText.opacity(0.8))
+                        }
+                    )
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
@@ -170,35 +178,38 @@ struct StoryCreationView: View {
     }
 
     private var plantButton: some View {
-        Button(action: {
-            Task {
-                focusedField = nil
-                EcoKeyboard.dismiss()
-                await viewModel.plantStory()
-                if viewModel.error == nil {
-                    if let coordinate = viewModel.lastLocation,
-                       let storyId = viewModel.lastPlantedStoryId {
-                        onPlantingSuccess?(coordinate, storyId)
+        Button(
+            action: {
+                Task {
+                    focusedField = nil
+                    EcoKeyboard.dismiss()
+                    await viewModel.plantStory()
+                    if viewModel.error == nil {
+                        if let coordinate = viewModel.lastLocation,
+                           let storyId = viewModel.lastPlantedStoryId {
+                            onPlantingSuccess?(coordinate, storyId)
+                        }
+                        dismiss()
                     }
-                    dismiss()
+                }
+            },
+            label: {
+                if viewModel.isPlanting {
+                    ProgressView()
+                        .tint(Color.theme.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
+                } else {
+                    Text("Plantar eco")
+                        .font(.headline)
+                        .foregroundStyle(Color.theme.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Capsule().fill(Color.theme.primaryComponent))
                 }
             }
-        }) {
-            if viewModel.isPlanting {
-                ProgressView()
-                    .tint(Color.theme.accent)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
-            } else {
-                Text("Plantar eco")
-                    .font(.headline)
-                    .foregroundStyle(Color.theme.accent)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Capsule().fill(Color.theme.primaryComponent))
-            }
-        }
+        )
         .disabled(viewModel.content.isEmpty || viewModel.title.isEmpty || viewModel.isPlanting)
         .opacity((viewModel.content.isEmpty || viewModel.title.isEmpty) ? 0.6 : 1.0)
     }

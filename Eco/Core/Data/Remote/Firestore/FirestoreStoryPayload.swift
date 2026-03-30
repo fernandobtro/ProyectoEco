@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 26/03/26.
 //
+//  Purpose: Firestore transport shape for story documents (`FirestoreStoryPayload`).
+//
 
 import Foundation
 
+/// Firestore transport for story documents (`FirestoreStoryPayload`).
 struct FirestoreStoryPayload: Sendable {
     let title: String
     let content: String

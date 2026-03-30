@@ -4,26 +4,26 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Capa Infra/Presentation: geofencing local para notificaciones por proximidad.
-//  Notificaciones agrupadas + anti-spam (dedupe, rate limit).
+//  Purpose: Local geofencing for proximity alerts, batches entries and applies ``NotificationPolicy``.
 //
 
 import CoreLocation
 import Foundation
 import Observation
 
+/// Geofence registration and entry hooks for proximity notifications.
 @Observable
 final class GeofencingService: NSObject {
     private let locationManager = CLLocationManager()
     private let localNotificationService: LocalNotificationServiceProtocol
     private var pendingStoryIDs: Set<String> = []
-    /// Metadatos de las historias monitorizadas (para título en la notificación y tap → lector).
+    /// Monitored stories keyed by id (titles for notification copy, tap opens reader).
     private var monitoredStoriesById: [String: Story] = [:]
     private var flushTask: Task<Void, Never>?
-    /// Agrupa entradas casi simultáneas sin añadir demora perceptible al “momento mágico”.
+    /// Near-simultaneous region entries without a noticeable delay to the user.
     private let debounceSeconds: TimeInterval = 2
     private let maxRegions = 20
-    /// iOS suele ser poco fiable por debajo de ~100 m; equilibrio entre precisión y que el evento llegue.
+    /// -100 m balances unreliable sub-100 m delivery on iOS with still-useful precision.
     private let regionRadius: CLLocationDistance = 100
 
     init(localNotificationService: LocalNotificationServiceProtocol) {
@@ -33,8 +33,7 @@ final class GeofencingService: NSObject {
         locationManager.requestAlwaysAuthorization()
     }
 
-    /// Configura regiones para las historias más cercanas (iOS limita ~20).
-    /// Llamar después de sync cuando ya hay datos frescos.
+    /// Registers up to -20 circular regions for the nearest stories (iOS limit). Call after sync when local data is fresh.
     func startMonitoring(stories: [Story]) {
         locationManager.monitoredRegions.forEach {
             locationManager.stopMonitoring(for: $0)
@@ -101,6 +100,6 @@ extension GeofencingService: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Política de errores: por ahora silencioso
+        // Errors are intentionally ignored here, geofencing is best-effort.
     }
 }

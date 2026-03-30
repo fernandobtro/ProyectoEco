@@ -8,13 +8,10 @@
 //
 //  Purpose: Local SwiftData access for story entities and sync-related queries.
 //
-//  Responsibilities:
-//  - Persist inserts and saves, fetch active rows or by local id, delete when a row exists.
-//  - Surface pending sync rows and resolve rows by remote id.
-//
 
 import Foundation
 
+/// Local SwiftData access for story entities and sync-related queries.
 protocol StoryLocalDataSourceProtocol {
     func saveNew(story: StoryEntity) async throws
     func saveChanges() async throws
@@ -22,7 +19,7 @@ protocol StoryLocalDataSourceProtocol {
     func fetchActiveStories() async throws -> [StoryEntity]
     /// Active stories with `updatedAt` descending (newest first), tie-broken by `id` for stable pagination.
     func fetchActiveStoriesSortedByUpdatedAtDescending() async throws -> [StoryEntity]
-    /// Active stories for one author, same stable sort as above; supports `limit` / `offset` paging.
+    /// Active stories for one author, same stable sort as above, supports `limit` / `offset` paging.
     func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [StoryEntity]
     func fetch(by id: UUID) async throws -> StoryEntity?
     func delete(id: UUID) async throws
@@ -31,7 +28,7 @@ protocol StoryLocalDataSourceProtocol {
     /// Finds a row by `StoryEntity.remoteId`, matching the backend document id (such as Firestore).
     func findByRemoteId(_ id: String) async throws -> StoryEntity?
 
-    /// Fetches rows whose `remoteId` is in `ids`. Empty strings are ignored; implementation may query in chunks.
+    /// Fetches rows whose `remoteId` is in `ids`. Empty strings are ignored, implementation may query in chunks.
     /// Rows with `remoteId == nil` never match.
     func fetchByRemoteIds(_ ids: [String]) async throws -> [StoryEntity]
 

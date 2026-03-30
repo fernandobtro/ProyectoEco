@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Fechas relativas fijas a español (México) para no depender del idioma del sistema.
+//  Purpose: Relative date copy pinned to `es_MX` regardless of system language (product choice).
 //
 
 import Foundation
 
+/// Named relative date strings (today/yesterday-style wording) using a fixed `es_MX` locale.
 enum EcoRelativeDateFormatting {
     private static let locale = Locale(identifier: "es_MX")
 

@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Implementación basada en UserDefaults para guardar el historial de notificaciones.
+//  Purpose: Persists in-app notification history in `UserDefaults` (bounded list).
 //
 
 import Foundation
 
+/// ``NotificationLogServiceProtocol`` backed by `UserDefaults`.
 final class NotificationLogService: NotificationLogServiceProtocol {
     private let storageKey = "eco.notificationLog"
     private let maxItems = 50
@@ -42,14 +43,14 @@ final class NotificationLogService: NotificationLogServiceProtocol {
     private func save(_ items: [NotificationItem]) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .secondsSince1970
-        let codable = items.map(CodableNotificationItem.init(domain:))
+        let codable = items.map { CodableNotificationItem(domain: $0) }
         if let data = try? encoder.encode(codable) {
             UserDefaults.standard.set(data, forKey: storageKey)
         }
     }
 }
 
-// MARK: - Codable wrapper
+// MARK: - Codable Wrapper
 
 private struct CodableNotificationItem: Codable {
     let id: UUID

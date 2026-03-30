@@ -4,9 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Explains local notifications for proximity / unlock before requesting system notification permission.
+//
 
 import SwiftUI
 
+/// `onAllow` / `onSkip` wire to permission request or deferred opt-out.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications**.
 struct NotificationsOnboardingView: View {
     var onAllow: () -> Void
     var onSkip: () -> Void

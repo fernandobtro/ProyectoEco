@@ -4,10 +4,15 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Loads persisted ``NotificationItem`` rows and maps them to ``NotificationViewData`` for the UI.
+//
 
 import Foundation
 import Observation
 
+/// Reads from ``NotificationLogServiceProtocol`` on `load()`, relative dates use `es_MX`.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications**.
 @MainActor
 @Observable
 final class NotificationsViewModel {
@@ -20,7 +25,7 @@ final class NotificationsViewModel {
         return formatter
     }()
 
-    /// Filas listas para la vista (copy y formato en Features).
+    /// Rows ready for the list (copy and formatting owned in Features).
     private(set) var rows: [NotificationViewData] = []
 
     init(logService: NotificationLogServiceProtocol) {

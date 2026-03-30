@@ -4,15 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Central place for map discovery numbers so you can tune behavior without touching use case code.
-//
-//  Responsibilities:
-//  - Near user radius and how many stories or pins to load or draw.
-//  - Camera debounce, minimum meaningful move, and how often explore mode refetches when the view stays put.
+//  Purpose: Tunable map discovery limits (radii, caps, debounce) shared by `MapViewModel` and discover use cases.
 //
 
 import Foundation
 
+/// Near-user and explore-mode thresholds, adjust here instead of scattering numbers.
 struct MapDiscoveryConfig: Sendable {
     // MARK: - Tuning
     var nearUserRadiusMeters: Double

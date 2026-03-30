@@ -17,7 +17,7 @@ import Foundation
 
 enum StoryBuilder {
 
-    /// Builds a `Story` with deterministic defaults; override only what the test cares about.
+    /// Builds a `Story` with deterministic defaults, override only what the test cares about.
     static func make(
         id: UUID = UUID(),
         title: String = "Test story",

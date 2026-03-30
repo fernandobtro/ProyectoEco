@@ -4,9 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Compact card nudging “Always” location so geofence-driven alerts work in the background.
+//
 
 import SwiftUI
 
+/// Shown when precise/always authorization is needed beyond “When In Use”, `onAllow` opens settings or continues upgrade flow.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Cross-Cutting: Sync, Geofencing, Notifications** (background location).
 struct AlwaysLocationUpgradeView: View {
     var onAllow: () -> Void
     var onSkip: () -> Void
@@ -53,4 +58,3 @@ struct AlwaysLocationUpgradeView: View {
         )
     }
 }
-

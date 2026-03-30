@@ -6,11 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Local sync state persisted on story entities (pending vs synced).
+//
 
 import Foundation
 
-/// Estado de sincronización de una historia con el backend.
-enum SyncStatus: String {
+/// Local sync state for a story row vs the backend.
+enum SyncStatus: String, Codable {
     case synced
     case pendingCreate
     case pendingUpdate

@@ -4,21 +4,20 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Contract for which stories the map shows in near-user versus explore mode.
-//
-//  Responsibilities:
-//  - Expose a stream of story arrays, switch discovery mode, and refresh by GPS or visible bounds.
-//  - Support clearing pins and location-driven updates when the mode is near-user.
+//  Purpose: Map discovery use case contract (near user vs explore).
 //
 
 import Foundation
 
+/// Contract for map-side discovery, implementation pushes updates through ``nearbyStories()``.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline**.
 protocol DiscoverNearbyStoriesUseCaseProtocol {
     // MARK: - Stream
     /// Stories over time. Each call installs a new stream connection, the latest one wins.
     func nearbyStories() -> AsyncStream<[Story]>
 
-    // MARK: - Mode and refresh
+    // MARK: - Mode and Refresh
     /// Switches near-user versus explore behavior for later refreshes and repository replays.
     func setDiscoveryMode(_ mode: MapDiscoveryMode)
 

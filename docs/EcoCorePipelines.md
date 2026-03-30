@@ -2,6 +2,8 @@
 
 This document describes end-to-end flows as implemented in the codebase. It is not exhaustive for every feature.
 
+**Documentation split:** narrative and sequencing live here; API contracts and non-obvious behavior belong in DocC-style `///` comments on public types and methods in code (single-line summary first, present tense, trailing period). Link types with double backticks (for example, ``StoryRepository``) instead of repeating long explanations in Swift files. The repository **[README](README.md)** summarizes the stack and points here for flows.
+
 ## Development tooling (`scripts/`)
 
 Optional **local-only** folder at the project root: `scripts/` is listed in `.gitignore` so personal automation (e.g. header batch scripts) is not committed. Nothing under `scripts/` is part of the shipped app.
@@ -37,11 +39,11 @@ Optional **local-only** folder at the project root: `scripts/` is listed in `.gi
 
 5. **`StoryRepository`** (`Core/Data/Persistence/Repositories/StoryRepository.swift`)  
    - `fetchActiveStoriesInBoundingBox` delegates to `StoryLocalDataSourceProtocol.fetchActiveStoriesInBoundingBox` and maps with `StoryPersistenceMapper.toDomain`.  
-   - `fetchAllStories()` remains for list/collection flows that need the full non-deleted set.
+   - Other callers may use `fetchAllStories()` / sorted active fetches where the full non-deleted set is required (not the Collection planted tab).
 
 6. **`SwiftDataStoryDataSource`** (`Core/Data/Persistence/SwiftDataStoryDataSource.swift`)  
    - `fetchActiveStoriesInBoundingBox` uses a SwiftData `#Predicate` (`deletedAt == nil` + lat/lon range).  
-   - List/collection flows use `fetchActiveStories()` / `fetchActiveStoriesSortedByUpdatedAtDescending()` so soft-deleted rows are not loaded from SQLite (still loads all *active* rows; pagination would be a further step if counts grow very large).
+   - `fetchActiveStories()` / `fetchActiveStoriesSortedByUpdatedAtDescending()` load all *active* rows (no soft-deleted) for callers that still need the full active set.
 
 7. **Remote fill (separate path):** `SyncStoriesUseCaseImpl` + `SyncWorker` pull from `FirestoreStoryDataSource` into local storage; then `notifyStoriesUpdatePublisher` causes discovery to replay.
 
@@ -77,6 +79,21 @@ Optional **local-only** folder at the project root: `scripts/` is listed in `.gi
 - Breakpoints: `DiscoverNearbyStoriesUseCaseImpl.refreshNearUser`, `refreshForVisibleBounds`, `runRefresh`.  
 - Inspect: `lastNearbyStoryIDs`, `discoveryMode`, `MapViewModel.nearbyStories` after stream yield.  
 - Logging: `Logger` category `DiscoverNearbyStories` on refresh failure (DEBUG also prints map discovery in `MapViewModel`).
+
+---
+
+# Collection (Planted / Discovered) Pipeline
+
+## Trigger
+
+User opens the **Collection** tab (`RootView` → `CollectionView`). Pull-to-refresh runs the same reload path as initial load.
+
+## Flow (summary)
+
+1. **`CollectionView`** — `.task { await viewModel.onAppear() }` → `refresh()`.
+2. **`CollectionViewModel.refresh()`** — `syncStoriesUseCase.executeWithFullRemotePull()`, then loads **planted** page 0 via ``GetPlantedStoriesUseCase`` / ``StoriesPage`` and **discovered** via ``GetDiscoveredStoriesUseCase`` (still reads `user.foundStories`; see TODO in ``GetDiscoveredStoriesUseCaseImpl`` for a future relational + paginated design).
+3. **Scroll (planted)** — Last visible row triggers `loadMorePlantedIfNeeded()` with guards against overlapping requests; uses the same use case with increasing `page`.
+4. **`StoryRepository.fetchPlantedStories`** — Delegates to ``SwiftDataStoryDataSource.fetchPlantedStories`` (stable sort: `updatedAt`, then `id`).
 
 ---
 

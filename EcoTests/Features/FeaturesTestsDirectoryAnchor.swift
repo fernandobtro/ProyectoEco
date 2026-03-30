@@ -12,5 +12,5 @@
 //  - None (remove this file when the first real test lands in this directory).
 //
 
-/// Empty marker; delete once `EcoTests/Features/` contains real test types.
+/// Empty marker, delete once `EcoTests/Features/` contains real test types.
 enum EcoFeaturesTestsDirectoryAnchor {}

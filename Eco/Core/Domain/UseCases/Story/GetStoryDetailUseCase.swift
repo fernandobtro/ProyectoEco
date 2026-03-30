@@ -8,12 +8,10 @@
 //
 //  Purpose: Resolve a single story by id for detail flows.
 //
-//  Responsibilities:
-//  - Return the story when present, or nil when missing or soft-deleted per repository rules.
-//
 
 import Foundation
 
+/// Resolve a single story by id for detail flows.
 protocol GetStoryDetailUseCaseProtocol {
     // MARK: - Public API
 

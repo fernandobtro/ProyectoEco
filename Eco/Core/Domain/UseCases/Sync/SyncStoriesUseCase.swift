@@ -8,12 +8,10 @@
 //
 //  Purpose: Entry point for syncing local stories with the backend.
 //
-//  Responsibilities:
-//  - Run incremental sync or a full remote pull, then allow repositories and UI to refresh.
-//
 
 import Foundation
 
+/// Entry point for syncing local stories with the backend.
 protocol SyncStoriesUseCase {
     // MARK: - Public API
     /// Incremental sync: push pending changes and pull remote updates without resetting the incremental sync cursor.

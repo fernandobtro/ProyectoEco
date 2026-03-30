@@ -6,16 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Implementatios of authentication services using the Firebase Auth SDK.
+//  Purpose: Firebase Auth SDK adapter for email, Google, and Apple sign-in.
 //
-//  Responsabilities:
-//  - Execute indentity provider operations (Email, Google, Apple).
-//  - Map SDK specific errors to domain friendly AuthError cases.
-//  - Provide synchronous and asynchronous access to the current Firebase user session.
 
 import Foundation
 import FirebaseAuth
 
+/// Low-level Firebase Auth operations and `AuthError` mapping.
 final class FirebaseAuthDataSource {
 
     // MARK: - Email and Password Operations

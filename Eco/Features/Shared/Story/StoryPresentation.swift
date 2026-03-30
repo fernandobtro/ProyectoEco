@@ -4,16 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Componentes de presentación de historias: mantener en esta carpeta para no mezclar
-//  filas de `List` con tarjetas de scroll. El layout compartido es `fileprivate` en este
-//  archivo para que solo existan las dos APIs públicas del módulo (`StoryListRowView`, `StoryCardView`).
+//  Purpose: `StoryListRowView` vs `StoryCardView` share `StoryListRowCore` so list and explore stay aligned.
 //
 
 import SwiftUI
 
-// MARK: - List (Colección, etc.)
+// MARK: - List Rows
 
-/// Fila para contextos `List`; no añade cromo de tarjeta.
+/// Narrative: `docs/EcoCorePipelines.md` — **Collection (Planted / Discovered) Pipeline** (presentation).
 struct StoryListRowView: View {
     let viewData: StoryViewData
 
@@ -22,9 +20,11 @@ struct StoryListRowView: View {
     }
 }
 
-// MARK: - Scroll / Explorar
+// MARK: - Explore Cards
 
-/// Tarjeta para `ScrollView` / `LazyVStack` (Explorar); no inyecta navegación.
+/// Card chrome for `ScrollView` / `LazyVStack` (map explore), does not inject navigation.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline** (presentation).
 struct StoryCardView: View {
     let viewData: StoryViewData
 
@@ -38,9 +38,9 @@ struct StoryCardView: View {
     }
 }
 
-// MARK: - Layout compartido (solo este archivo)
+// MARK: - Shared Layout
 
-fileprivate struct StoryListRowCore: View {
+private struct StoryListRowCore: View {
     let viewData: StoryViewData
 
     var body: some View {

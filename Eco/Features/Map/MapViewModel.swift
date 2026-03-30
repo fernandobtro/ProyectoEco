@@ -4,12 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Runs the map’s discovery flow, switching between following you and exploring what is on screen.
-//
-//  Responsibilities:
-//  - Keep nearby stories aligned with GPS or the visible map area, with debounce and small-change filters.
-//  - Offset pins that share a spot so they stay readable, and handle taps to select or open the reader.
-//  - Subscribe to the live story stream, refresh geofencing, and run the first sync when the map appears.
+//  Purpose: Map UI state, pins, discovery mode, and subscription to the nearby-stories stream.
 //
 
 import CoreLocation
@@ -18,23 +13,27 @@ import MapKit
 import Observation
 import SwiftUI
 
-// MARK: - Pin tap outcome
+// MARK: - Pin Tap Outcome
 
+/// Result of interpreting a pin tap (select vs open reader on second tap).
 enum MapPinTapOutcome {
     case selected
     case shouldOpenReader
 }
 
-// MARK: - Map ViewModel
+// MARK: - Map View Model
 
 /// Owns the map camera, pins, discovery mode, and the nearby-stories flow.
 ///
 /// - Important: Call ``onAppear()`` when the map appears, and ``onMapCameraChanged(region:)`` when SwiftUI reports camera updates.
+/// - SeeAlso: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline**.
 @MainActor
 @Observable
 class MapViewModel {
 
-    // MARK: - Nested types
+    // MARK: - Nested Types
+
+    /// One map pin: story id, coordinate, sync flag, and horizontal label offset.
     struct StoryAnnotation: Identifiable {
         let id: UUID
         let coordinate: CLLocationCoordinate2D
@@ -175,7 +174,7 @@ class MapViewModel {
                 cameraPosition = .userLocation(fallback: .region(Self.cameraFallbackRegion))
                 isProgrammaticCameraChange = true
                 #if DEBUG
-                print("[MapViewModel] return from exploring → reset to nearUser")
+                print("[MapViewModel] return from exploring - reset to nearUser")
                 #endif
             } else if let region = cameraPosition.region,
                       max(region.span.latitudeDelta, region.span.longitudeDelta) > 5 {
@@ -272,18 +271,19 @@ class MapViewModel {
     }
 
     // MARK: - Public API
-    /// Reloads pins for the current mode (GPS or visible area); cancels any pending explore refresh.
+    /// Reloads pins for the current mode (GPS or visible area), cancels any pending explore refresh.
     func refreshDiscovery() async {
         exploreDebounceTask?.cancel()
         await runRefreshDiscoveryWithPriority()
     }
 
+    /// Reloads map stories and geofencing regions in one call (used by pull-to-refresh style flows).
     func refreshStories() async {
         await refreshDiscovery()
         await updateGeofencingRegions()
     }
 
-    /// First tap selects the pin; a second tap on the same pin may open the reader, with short debounce windows.
+    /// First tap selects the pin, a second tap on the same pin may open the reader, with short debounce windows.
     func handlePinTap(storyId: UUID) -> MapPinTapOutcome? {
         let now = Date()
         lastPinSurfaceInteractionAt = now
@@ -329,7 +329,12 @@ class MapViewModel {
         return Date().timeIntervalSince(lastPinInteractionAt) < Self.mapBackgroundTapIgnoresPinWithinSeconds
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
+
+    /// Executes discovery refresh at `.userInitiated` priority and keeps mode-specific rules centralized.
+    ///
+    /// Near-user mode uses current GPS (or clears when no GPS and no data yet). Explore mode only fetches when
+    /// bounds exist and either the region changed meaningfully or the previous fetch is considered stale.
     private func runRefreshDiscoveryWithPriority() async {
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             Task(priority: .userInitiated) { @MainActor [weak self] in
@@ -366,10 +371,12 @@ class MapViewModel {
         }
     }
 
+    /// Best-effort region source for explore refreshes, preferring live camera, then latest observed regions.
     private func resolvedExplorationRegionForRefresh() -> MKCoordinateRegion? {
         cameraPosition.region ?? latestExplorationRegion ?? lastCameraRegionForComparison
     }
 
+    /// Switches discovery mode and resets explore-specific cache/cursor state.
     private func applyMapDiscoveryMode(_ newMode: MapDiscoveryMode) {
         guard mapDiscoveryMode != newMode else { return }
         mapDiscoveryMode = newMode
@@ -379,11 +386,13 @@ class MapViewModel {
         clearStorySelection()
     }
 
+    /// `true` when the last explore fetch is old enough to force a refresh even without camera movement.
     private func isExploreFetchConsideredStale() -> Bool {
         guard let lastExploreFetchTime = lastExploreFetchAt else { return true }
         return Date().timeIntervalSince(lastExploreFetchTime) > mapDiscoveryConfig.exploreStaleRefetchIntervalSeconds
     }
 
+    /// Epsilon-based camera-change guard to ignore micro-movements from map rendering noise.
     private func hasMeaningfulCameraChange(from previous: MKCoordinateRegion?, to new: MKCoordinateRegion) -> Bool {
         guard let previous else { return true }
         let eps = mapDiscoveryConfig.cameraMeaningfulChangeEpsilonDegrees
@@ -395,6 +404,10 @@ class MapViewModel {
         return max(dLat, dLon, dSpan) > eps
     }
 
+    /// Returns stories sorted for pin rendering and capped to `maxVisiblePins`.
+    ///
+    /// Uses distance ordering when a reference coordinate exists (near-user or explore center),
+    /// and a stable UUID fallback ordering otherwise.
     private func storiesOrderedForMapDisplay() -> [Story] {
         let limit = mapDiscoveryConfig.maxVisiblePins
         guard let ref = sortReferenceCoordinate() else {
@@ -415,6 +428,7 @@ class MapViewModel {
             .map { $0 }
     }
 
+    /// Coordinate used for distance-based ordering depending on discovery mode.
     private func sortReferenceCoordinate() -> CLLocationCoordinate2D? {
         switch mapDiscoveryMode {
         case .nearUser:
@@ -424,6 +438,7 @@ class MapViewModel {
         }
     }
 
+    /// Spreads pins sharing the same rounded coordinate bucket to avoid full overlap on screen.
     private static func spreadCollocatedAnnotations(_ stories: [Story]) -> [StoryAnnotation] {
         let spacing: CGFloat = 20
         var nextSlot: [String: Int] = [:]
@@ -452,6 +467,7 @@ class MapViewModel {
         }
     }
 
+    /// Buckets coordinates using fixed precision so near-identical points collocate consistently.
     private static func coordinateBucketKey(latitude: Double, longitude: Double) -> String {
         String(format: "%.5f,%.5f", latitude, longitude)
     }
@@ -465,6 +481,7 @@ class MapViewModel {
     }
     #endif
 
+    /// Rebuilds geofencing regions from nearest stories to current location (best effort on failure).
     private func updateGeofencingRegions() async {
         guard let coordinate = locationService.lastKnownCoordinate else { return }
         do {

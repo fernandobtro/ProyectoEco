@@ -6,10 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 03/03/26.
 //
+//  Purpose: Forwards `LocationService` delegate events into discover-nearby and story-entry tracking use cases.
+//
 
 import Foundation
 
-/// Conecta eventos del LocationService (infraestructura) con los casos de uso de dominio.
+/// `LocationService` delegate that fans out updates to map discovery and progress tracking.
 final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDiscoveryControlling {
     private var locationService: LocationServiceProtocol
     private let discoverNearbyStoriesUseCase: DiscoverNearbyStoriesUseCaseProtocol
@@ -50,6 +52,6 @@ final class LocationEventsAdapter: NSObject, LocationServiceDelegate, LocationDi
     }
 
     func didFailWithError(_ error: Error) {
-        // Política de errores: por ahora silencioso
+        // Best-effort: ignore discovery errors here
     }
 }

@@ -4,17 +4,20 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Lector minimal desde el mapa: título, apodo, texto justificado en accent, fondo crema.
+//  Purpose: Lightweight in-map reader: title, author line, body on cream, uses ``StoryDetailViewModel`` for payload.
 //
 
 import SwiftUI
 import UIKit
 
+/// Sheet/slide reader opened from the map, resolves author nickname via ``GetAuthorProfileByIdUseCaseProtocol``.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline** (reader entry).
 struct MapStoryReaderView: View {
     @Bindable var viewModel: StoryDetailViewModel
     private let authorProfileByIdUseCase: GetAuthorProfileByIdUseCaseProtocol
 
-    /// `nil` = aún no resuelto o sin `authorId` (no mostramos línea). Tras fetch: apodo o «Autor desconocido».
+    /// `nil` while loading or when the story has no `authorId`, otherwise nickname or a fallback author label.
     @State private var resolvedAuthorLine: String?
 
     init(
@@ -109,7 +112,7 @@ struct MapStoryReaderView: View {
     }
 }
 
-// MARK: - Texto justificado (UIKit)
+// MARK: - Justified Text (UIKit)
 
 private struct JustifiedStoryBody: UIViewRepresentable {
     let text: String

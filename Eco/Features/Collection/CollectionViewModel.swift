@@ -6,22 +6,21 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Drive the Collection screen with planted vs discovered Ecos and sync-backed lists.
-//
-//  Responsibilities:
-//  - Refresh from remote and load both tabs, surface loading and error state.
-//  - Delete planted stories (single or by list offsets) and keep lists consistent.
+//  Purpose: Collection tab: sync, paginated planted list, discovered list, deletes.
 //
 
 import Foundation
 import Observation
 
-// MARK: - Tab & state types
+// MARK: - Tab and State Types
+
+/// Visible segment on the Collection tab.
 enum CollectionTab {
     case planted
     case discovered
 }
 
+/// Snapshot of lists and pagination flags for the Collection UI.
 enum CollectionState: Equatable {
     case idle
     case loading
@@ -34,6 +33,9 @@ enum CollectionState: Equatable {
     case error(String)
 }
 
+/// Orchestrates the Collection screen: full sync on refresh, paged planted stories, non-paged discovered stories, and swipe/delete flows.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Collection (Planted / Discovered) Pipeline**.
 @MainActor
 @Observable
 final class CollectionViewModel {
@@ -44,10 +46,10 @@ final class CollectionViewModel {
     private let deleteStoryUseCase: DeleteStoryUseCaseProtocol
     private let syncStoriesUseCase: SyncStoriesUseCase
 
-    /// Page size for planted list; use case fetches `pageSize + 1` rows to compute `hasMore`.
+    /// Page size for planted list, use case fetches `pageSize + 1` rows to compute `hasMore`.
     private static let plantedPageSize = 20
 
-    // MARK: - Published state
+    // MARK: - Published State
     var selectedSegment: CollectionTab = .planted
     var state: CollectionState = .idle
 
@@ -159,7 +161,7 @@ final class CollectionViewModel {
         }
     }
 
-    // MARK: - Derived lists
+    // MARK: - Derived Lists
     var plantedStories: [Story] {
         guard case let .loaded(planted, _, _, _) = state else {
             return []
@@ -188,7 +190,7 @@ final class CollectionViewModel {
         return loadingMore
     }
 
-    // MARK: - Discovered map helpers
+    // MARK: - Discovered Map Helpers
 
     /// Coordinate for opening Maps for a discovered story, if the story exists in the loaded list.
     func discoveredDestinationCoordinate(for id: UUID) -> (latitude: Double, longitude: Double)? {
@@ -203,7 +205,7 @@ final class CollectionViewModel {
         return trimmed.isEmpty ? "Eco" : trimmed
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
     private static func listItem(for story: Story) -> StoryViewData {
         StoryViewData(
             id: story.id,

@@ -4,11 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Keeps the map stream of stories aligned with the local repository and discovery mode.
-//
-//  Responsibilities:
-//  - Filter by near user radius, visible bounds, span limits, and fetch or pin caps from config.
-//  - Serialize refreshes, replay after repository updates, and push results into nearbyStories().
+//  Purpose: Map discovery stream (near user vs visible bounds) backed by local story queries.
 //
 
 import Combine
@@ -21,6 +17,9 @@ private let discoverNearbyStoriesLog = Logger(
     category: "DiscoverNearbyStories"
 )
 
+/// Streams nearby stories for the map using bounded fetches, config caps, and an in-memory distance pass when required.
+///
+/// Narrative walkthrough: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline**.
 @MainActor
 final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtocol {
     // MARK: - State
@@ -44,20 +43,25 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
     }
 
     // MARK: - Public API
+
+    /// Async stream consumed by ``MapViewModel``. Emits the current nearby/explore list whenever refreshes complete.
     func nearbyStories() -> AsyncStream<[Story]> {
         AsyncStream { [weak self] continuation in
             self?.continuation = continuation
         }
     }
 
+    /// Updates internal mode used by refresh/replay logic (`nearUser` vs `exploring`).
     func setDiscoveryMode(_ mode: MapDiscoveryMode) {
         discoveryMode = mode
     }
 
+    /// Last emitted story ids for side effects such as geofencing/progress tracking.
     func currentNearbyStoryIDs() -> [UUID] {
         lastNearbyStoryIDs
     }
 
+    /// Clears stream output and cached coordinates/bounds when discovery context is reset.
     func clearDisplayedStories() async {
         lastNearLat = nil
         lastNearLon = nil
@@ -66,11 +70,13 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         continuation?.yield([])
     }
 
+    /// Entry point from GPS updates; ignored while in explore mode.
     func onUserLocationUpdated(latitude: Double, longitude: Double) async {
         guard discoveryMode == .nearUser else { return }
         await refreshNearUser(latitude: latitude, longitude: longitude)
     }
 
+    /// Near-user refresh: bounded fetch + in-memory distance filter using configured radius.
     func refreshNearUser(latitude: Double, longitude: Double) async {
         lastNearLat = latitude
         lastNearLon = longitude
@@ -98,6 +104,7 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         }
     }
 
+    /// Explore refresh for visible bounds, with span guard and fetch cap from ``MapDiscoveryConfig``.
     func refreshForVisibleBounds(_ bounds: MapVisibleBounds) async {
         lastBounds = bounds
         await runRefresh {
@@ -121,7 +128,7 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         }
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
     /// Replays the last near-user or explore inputs after local story data changes.
     private func replayAfterRepositoryUpdate() async {
         switch discoveryMode {
@@ -161,6 +168,7 @@ final class DiscoverNearbyStoriesUseCaseImpl: DiscoverNearbyStoriesUseCaseProtoc
         }
     }
 
+    /// Subscribes to repository update notifications and replays current discovery context with debounce.
     private func setupRepositorySubscription() {
         storyRepository.storiesUpdatePublisher
             .debounce(for: .milliseconds(150), scheduler: RunLoop.main)

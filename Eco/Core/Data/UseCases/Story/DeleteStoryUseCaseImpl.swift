@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Implements `DeleteStoryUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `DeleteStoryUseCase` using repositories and async side effects.
 final class DeleteStoryUseCaseImpl: DeleteStoryUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
     private let sessionRepository: SessionRepositoryProtocol
@@ -26,7 +29,7 @@ final class DeleteStoryUseCaseImpl: DeleteStoryUseCaseProtocol {
         guard story.authorID == currentUserId else {
             throw EcoError.unauthorizedAction
         }
-        print("🧵 [DELETE] story: \(storyId)")
+        print("[DELETE] story: \(storyId)")
         try await storyRepository.delete(storyID: storyId)
     }
 }

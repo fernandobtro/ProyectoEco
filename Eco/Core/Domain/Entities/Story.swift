@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 27/02/26.
 //
+//  Purpose: Domain entity `Story` (pure model, no framework UI).
+//
 
 import Foundation
 
+/// Domain entity `Story` (pure model, no framework UI).
 struct Story: Identifiable, Equatable {
     let id: UUID
     let title: String
@@ -17,6 +20,6 @@ struct Story: Identifiable, Equatable {
     let latitude: Double
     let longitude: Double
     let isSynced: Bool
-    /// Última modificación; clave para orden, conflictos y debugging.
+    /// Last modification time (ordering, sync conflicts, debugging).
     let updatedAt: Date
 }

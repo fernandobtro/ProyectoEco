@@ -6,12 +6,10 @@
 //
 //  Purpose: Firebase-backed implementation of author profile storage.
 //
-//  Responsibilities:
-//  - Delegate create, read, and save to FirebaseAuthorProfileDataSource.
-//
 
 import Foundation
 
+/// Firebase-backed implementation of author profile storage.
 final class AuthorProfileRepository: AuthorProfileRepositoryProtocol {
     // MARK: - Dependencies
     private let dataSource: FirebaseAuthorProfileDataSource

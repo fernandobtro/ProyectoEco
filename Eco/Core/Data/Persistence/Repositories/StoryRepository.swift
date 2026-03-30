@@ -7,14 +7,12 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //
 //  Purpose: Domain-focused repository managing story persistence, mapping and change notifications.
-//  Responsabilities:
-//  - Bridge between SwiftData entities and clean Domain Story models.
-//  - Handle logical deleiton (soft delete) filtering for fetches.
-//  - Broadcast data changes via Combine to keep the Map and Lists(Collection) reactive
+//
 
 import Combine
 import Foundation
 
+/// Domain-focused repository managing story persistence, mapping and change notifications.
 struct StoryRepository: StoryRepositoryProtocol {
 
     private let storyLocalDataSource: StoryLocalDataSourceProtocol
@@ -82,12 +80,12 @@ struct StoryRepository: StoryRepositoryProtocol {
     /// - Returns: A domain ``Story``if found, otherwise `nil`
     func fetchStory(by id: UUID) async throws -> Story? {
         #if DEBUG
-        print("🗄️ [StoryRepository] fetchStory by id=\(id.uuidString)")
+        print("[StoryRepository] fetchStory by id=\(id.uuidString)")
         #endif
         guard let entity = try await storyLocalDataSource.fetch(by: id),
               entity.deletedAt == nil else { return nil }
         #if DEBUG
-        print("🗄️ [StoryRepository] fetchStory found remoteId=\(entity.remoteId ?? "nil") deletedAt=nil")
+        print("[StoryRepository] fetchStory found remoteId=\(entity.remoteId ?? "nil") deletedAt=nil")
         #endif
         return StoryPersistenceMapper.toDomain(entity)
     }

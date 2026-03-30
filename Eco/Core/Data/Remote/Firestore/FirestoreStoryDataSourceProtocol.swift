@@ -8,13 +8,10 @@
 //
 //  Purpose: Remote story persistence and reads against the Firestore `stories` collection.
 //
-//  Responsibilities:
-//  - Create, update, and soft-delete story documents by remote id.
-//  - Fetch changed or all story DTOs for sync pull using `updatedAt` boundaries.
-//
 
 import Foundation
 
+/// Remote story persistence and reads against the Firestore `stories` collection.
 protocol FirestoreStoryDataSourceProtocol: AnyObject {
     // MARK: - Public API
 

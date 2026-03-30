@@ -6,10 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Resolves timestamp conflicts during pull merge.
+//
 
 import Foundation
 
-/// Acción resultante de resolver un conflicto entre local y remoto.
+/// Outcome of comparing a local row with a remote story during pull.
 enum StorySyncAction {
     case insert(StoryEntity)
     case updateLocal(StoryEntity)
@@ -17,21 +19,19 @@ enum StorySyncAction {
     case deleteLocal
 }
 
-/// Resuelve conflictos last-write-wins entre historias locales y remotas.
+/// Last-write-wins merge for story rows (with explicit pending-delete precedence).
 enum SyncConflictResolver {
 
-    /// Resuelve el conflicto entre una entidad local (opcional) y un DTO remoto.
-    /// - Regla: pendingDelete SIEMPRE gana (intención final del usuario).
-    /// - Regla: mayor updatedAt gana.
+    /// Merges optional local `StoryEntity` with remote DTO, `pendingDelete` always wins, else latest `updatedAt`.
     static func resolve(
         local: StoryEntity?,
         remote: RemoteStoryDTO
     ) -> StorySyncAction {
-        // Remoto eliminado
+        // Remote deleted
         if remote.deletedAt != nil {
             guard let local else { return .keepLocal }
-            // pendingCreate: nunca llegó al server, local es fuente de verdad
-            if SyncStatus(rawValue: local.syncStatus) == .pendingCreate {
+            // pendingCreate: never reached server, keep local as source of truth
+            if local.syncStatus == .pendingCreate {
                 return .keepLocal
             }
             return .deleteLocal
@@ -41,18 +41,18 @@ enum SyncConflictResolver {
             return .insert(StoryRemoteMapper.toEntity(remote, existing: nil))
         }
 
-        // 🔴 Caso crítico: delete gana siempre
-        if SyncStatus(rawValue: local.syncStatus) == .pendingDelete {
+        // User-initiated delete always wins
+        if local.syncStatus == .pendingDelete {
             return .keepLocal
         }
 
-        // 🟢 Remote gana
+        // Remote wins
         if remote.updatedAt > local.updatedAt {
             let entity = StoryRemoteMapper.toEntity(remote, existing: local)
             return .updateLocal(entity)
         }
 
-        // 🔵 Local gana
+        // Local wins
         return .keepLocal
     }
 }

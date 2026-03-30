@@ -7,13 +7,10 @@
 //  Created by Fernando Buenrostro on 02/03/26.
 //
 //  Purpose: Repository responsible for aggregating user profile data and hydrating story associations.
-//  Responsibilities:
-//  - Set-up local user profiles for offline-first support if they don't exist.
-//  - Hydrate story ID lists into full domain models by querying the StoryDataSource.
-//  - Manage user progress, sucha as tracking discoverd or "found" stories.
 
 import Foundation
 
+/// Repository responsible for aggregating user profile data and hydrating story associations.
 struct UserRepository: UserRepositoryProtocol {
     
     // MARK: - Dependencies
@@ -37,14 +34,14 @@ struct UserRepository: UserRepositoryProtocol {
     /// Retrieves the current user profile, performing an automatic setup if no local record exists.
     ///
     /// This method ensures an Offline-first experience by creating a local `UserEntity` based on the active session if the database is empty. Then "hydrates" the story collections before returning the domain model.
-    ///  - Returns: A fully hydrated ``User``domain model, or `nil` if session data is missing.
+    ///  - Returns: A hydrated ``User``domain model, or `nil` if session data is missing.
     ///  - Throws: Persistence or session-related errors.
     func getCurrentUser() async throws -> User? {
         let userEntity: UserEntity
         if let existing = try await userLocalDataSource.fetchCurrentUser() {
             userEntity = existing
         } else {
-            // Bootstrap del usuario local para flujo offline-first.
+            // Bootstrap local user row for offline-first flow
             let currentUserId = try sessionRepository.getCurrentUserId()
             let sessionNick = sessionRepository.getNickname() ?? "Explorador"
             let nickname = EcoAuthorDisplayFormatting.displayNickname(sessionNick, authorFirebaseUid: currentUserId)
@@ -70,15 +67,15 @@ struct UserRepository: UserRepositoryProtocol {
 
     // Placeholder for future cloud synchronization logic for user profiles.
     func syncWithCloud() async throws {
-        print("Simulando sincronización")
+        print("UserRepository.syncWithCloud: stub — no remote sync yet")
     }
 
     // MARK: - Private Helpers
 
-    /// Transform a list of IDs into full domain Story models.
+    /// Transform a list of IDs into domain Story models.
     ///
-    /// This "hydration" process is necessary because UserEntity only stores references (IDs) to mantein a clean and light database schema.
-    ///  - Parameter ids: Array of stry UUID.
+    /// Hydrates full ``Story`` models because ``UserEntity`` only stores lightweight id references.
+    ///  - Parameter ids: Story ids to load.
     ///  - Returns: Array of mapped domain ``Story`` objects.
     ///
     private func hydrateStories(ids: [UUID]) async throws -> [Story] {

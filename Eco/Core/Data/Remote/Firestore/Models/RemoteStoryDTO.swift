@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Firestore transport shape for story documents (`RemoteStoryDTO`).
+//
 
 import Foundation
 import FirebaseFirestore
 
+/// Firestore transport shape for story documents (`RemoteStoryDTO`).
 struct RemoteStoryDTO {
     let remoteId: String
     let title: String

@@ -6,11 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Observes connectivity for sync-on-reconnect.
+//
 
 import Foundation
 import Network
 
-/// Monitorea la conectividad de red para disparar sync cuando vuelve a estar disponible.
+/// Minimal connectivity surface for sync-on-reconnect (`NWPathMonitor` underneath).
 protocol NetworkMonitorProtocol {
     var isConnected: Bool { get }
     func startMonitoring(onStatusChange: @escaping (Bool) -> Void)

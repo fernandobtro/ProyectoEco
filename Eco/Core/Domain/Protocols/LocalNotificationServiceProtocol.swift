@@ -6,13 +6,16 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Domain/service protocol `LocalNotificationServiceProtocol`.
+//
 
 import Foundation
 
+/// Domain/service protocol `LocalNotificationServiceProtocol`.
 protocol LocalNotificationServiceProtocol {
     func scheduleStoryUnlockedNotification(storyTitle: String) async
-    /// Proximidad con un solo Eco elegible: tap → lector (`storyId` en `userInfo`).
+    /// Single eligible story: tap opens reader (`storyId` in `userInfo`).
     func scheduleProximityNotification(storyId: String, storyTitle: String) async
-    /// Varios Ecos a la vez: tap → mapa (evita elegir historia arbitraria).
+    /// Multiple stories at once: tap opens map (avoids picking an arbitrary story).
     func scheduleGroupedProximityNotification(count: Int) async
 }

@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Social-first sign-up screen with paths to email register and login.
+//
 
 import Foundation
 import SwiftUI
 
+/// Presents Apple/Google registration and fallbacks to email or existing-account login.
 struct SocialRegisterView: View {
     @Bindable var viewModel: SocialAuthViewModel
     var onEmailTap: () -> Void

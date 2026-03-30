@@ -6,10 +6,15 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Load/save ``AuthorProfile`` for the current session and expose logout.
+//
 
 import Foundation
 import Observation
 
+/// Bridges ``GetAuthorProfileUseCase``, ``SaveAuthorProfileUseCase``, and ``LogoutUseCaseProtocol`` to the profile UI.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (session and author profile).
 @MainActor
 @Observable
 final class ProfileViewModel {
@@ -21,9 +26,9 @@ final class ProfileViewModel {
 
     var profile: AuthorProfile?
     var editableNickname: String = ""
-    /// Carga inicial del perfil.
+    /// True while the initial profile fetch is in progress.
     var isLoading: Bool = false
-    /// Guardado del apodo en curso.
+    /// True while saving nickname/profile changes.
     var isSaving: Bool = false
     var errorMessage: String?
     private var isLoadInProgress = false
@@ -62,22 +67,22 @@ final class ProfileViewModel {
             do {
                 let loaded = try await getAuthorProfileUseCase.execute()
                 #if DEBUG
-                print("👤 [ProfileVM] loadProfile loaded=\(loaded != nil)")
+                print("[ProfileVM] loadProfile loaded=\(loaded != nil)")
                 #endif
-                if let p = loaded {
-                    profile = p
-                    if let safe = EcoAuthorDisplayFormatting.displayNickname(p.nickname, authorFirebaseUid: p.id) {
+                if let loadedProfile = loaded {
+                    profile = loadedProfile
+                    if let safe = EcoAuthorDisplayFormatting.displayNickname(loadedProfile.nickname, authorFirebaseUid: loadedProfile.id) {
                         editableNickname = safe
                     } else {
                         editableNickname = getCurrentSessionUseCase.getNickname() ?? ""
                     }
                 } else if profile == nil {
-                    // Si nunca tuvimos perfil, dejamos estado vacío; si ya había uno, no lo pisamos.
+                    // No remote profile yet: seed from session, keep existing in-memory profile if we already had one.
                     editableNickname = getCurrentSessionUseCase.getNickname() ?? ""
                 }
             } catch {
                 #if DEBUG
-                print("👤 [ProfileVM] loadProfile error=\(error.localizedDescription)")
+                print("[ProfileVM] loadProfile error=\(error.localizedDescription)")
                 #endif
                 errorMessage = error.localizedDescription
             }

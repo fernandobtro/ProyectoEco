@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Local notification stack (`UserNotificationService`): scheduling, policy, or user-facing service.
+//
 
 import Foundation
 import UserNotifications
 
+/// Local notification stack (`UserNotificationService`): scheduling, policy, or user-facing service.
 final class UserNotificationService: LocalNotificationServiceProtocol {
     private let center: UNUserNotificationCenter
     private let logService: NotificationLogServiceProtocol
@@ -70,7 +73,7 @@ final class UserNotificationService: LocalNotificationServiceProtocol {
         content.userInfo = ["deepLink": "map"]
         content.threadIdentifier = "eco.proximity"
 
-        // Un solo aviso agrupado: el nuevo reemplaza al anterior sin llenar el centro de notificaciones.
+        // Single grouped slot: replace prior request so Notification Center does not stack duplicates.
         let request = UNNotificationRequest(
             identifier: "eco.proximity.grouped.pending",
             content: content,

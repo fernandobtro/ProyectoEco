@@ -15,6 +15,7 @@
 import Foundation
 import SwiftData
 
+/// Local SwiftData access for user profile persistence and discovery progress tracking.
 @MainActor
 class SwiftDataUserDataSource: UserLocalDataSourceProtocol {
     // MARK: - Dependencies
@@ -25,7 +26,7 @@ class SwiftDataUserDataSource: UserLocalDataSourceProtocol {
         self.modelContext = modelContext
     }
     
-    // MARK: Public API
+    // MARK: - Public API
     
     /// Saves a new user entity or updates an existing one in the model context.
     /// - Parameter user: The ``UserEntity``instance to persist.

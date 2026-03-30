@@ -6,11 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 03/03/26.
 //
+//  Purpose: `CLLocationManager` wrapper: permissions, one-shot fixes, streaming `lastKnownCoordinate`, geofencing hooks.
+//
 
 import Combine
 import CoreLocation
 import Foundation
 
+/// Concrete ``LocationServiceProtocol``, posts updates to ``LocationServiceDelegate``.
 class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
     
     weak var delegate: LocationServiceDelegate?

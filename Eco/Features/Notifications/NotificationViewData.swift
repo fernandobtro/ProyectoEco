@@ -4,17 +4,18 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Datos listos para la lista de notificaciones (copy + icono + contexto de tap).
+//  Purpose: View models and rows for the notifications panel without exposing domain `NotificationItem` in SwiftUI.
 //
 
 import Foundation
 
-/// Contexto mínimo para navegación o acciones al pulsar una fila (sin exponer `NotificationItem` en la vista).
+/// Minimal routing payload when the user taps a row (keeps `NotificationItem` out of the view layer).
 enum NotificationTapContext: Equatable {
     case proximityGrouped
     case storyUnlocked(storyId: String?, storyTitle: String?)
 }
 
+/// One row: title, relative date string, SF Symbol name, and tap context.
 struct NotificationViewData: Identifiable, Equatable {
     let id: UUID
     let title: String

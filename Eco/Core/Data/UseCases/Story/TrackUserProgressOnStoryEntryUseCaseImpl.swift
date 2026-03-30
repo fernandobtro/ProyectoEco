@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 03/03/26.
 //
+//  Purpose: Implements `TrackUserProgressOnStoryEntryUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `TrackUserProgressOnStoryEntryUseCase` using repositories and async side effects.
 final class TrackUserProgressOnStoryEntryUseCaseImpl: TrackUserProgressOnStoryEntryUseCaseProtocol {
     private let userRepository: UserRepositoryProtocol
     private let storyRepository: StoryRepositoryProtocol
@@ -33,7 +36,7 @@ final class TrackUserProgressOnStoryEntryUseCaseImpl: TrackUserProgressOnStoryEn
                 await localNotificationService.scheduleStoryUnlockedNotification(storyTitle: story.title)
             }
         } catch {
-            // Política de errores: por ahora silencioso
+            // Best-effort: ignore persistence errors for progress tracking
         }
     }
 }

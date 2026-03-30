@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Observable sync lifecycle for global indicators.
+//
 
 import Foundation
 import Observation
 
+/// Observable sync lifecycle for global indicators.
 @MainActor
 @Observable
 final class SyncStateService {

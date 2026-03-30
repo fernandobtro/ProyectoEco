@@ -6,10 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 18/03/26.
 //
+//  Purpose: Serializable sync phase for UI and services.
+//
 
 import Foundation
 
-/// Estado global de sincronización para feedback visual.
+/// High-level sync phase for indicators and debounced UI.
 enum SyncState: Equatable {
     case idle
     case syncing

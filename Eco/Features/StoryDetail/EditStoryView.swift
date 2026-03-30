@@ -6,6 +6,8 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Author sheet to edit title and body, same visual language as story creation, no map.
+//
 
 import CoreLocation
 import SwiftUI
@@ -15,7 +17,9 @@ private enum EditStoryFocusedField: Hashable {
     case content
 }
 
-/// Misma estética que `StoryCreationView`, sin mapa.
+/// Edit form for the loaded story, mirrors ``StoryCreationView`` styling without map context.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Story Detail (Read / Unlock / Edit / Delete) Pipeline**.
 struct EditStoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var viewModel: StoryDetailViewModel
@@ -36,11 +40,14 @@ struct EditStoryView: View {
             VStack(spacing: 0) {
                 HStack {
                     Spacer()
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(Color.theme.primaryText.opacity(0.8))
-                    }
+                    Button(
+                        action: { dismiss() },
+                        label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(Color.theme.primaryText.opacity(0.8))
+                        }
+                    )
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
@@ -154,31 +161,34 @@ struct EditStoryView: View {
     }
 
     private var saveButton: some View {
-        Button(action: {
-            Task {
-                focusedField = nil
-                EcoKeyboard.dismiss()
-                await viewModel.updateStory(title: title, content: content)
-                if viewModel.updateError == nil {
-                    dismiss()
+        Button(
+            action: {
+                Task {
+                    focusedField = nil
+                    EcoKeyboard.dismiss()
+                    await viewModel.updateStory(title: title, content: content)
+                    if viewModel.updateError == nil {
+                        dismiss()
+                    }
+                }
+            },
+            label: {
+                if viewModel.isUpdating {
+                    ProgressView()
+                        .tint(Color.theme.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
+                } else {
+                    Text("Guardar cambios")
+                        .font(.headline)
+                        .foregroundStyle(Color.theme.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Capsule().fill(Color.theme.primaryComponent))
                 }
             }
-        }) {
-            if viewModel.isUpdating {
-                ProgressView()
-                    .tint(Color.theme.accent)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Capsule().fill(Color.theme.primaryComponent.opacity(0.5)))
-            } else {
-                Text("Guardar cambios")
-                    .font(.headline)
-                    .foregroundStyle(Color.theme.accent)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Capsule().fill(Color.theme.primaryComponent))
-            }
-        }
+        )
         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isUpdating)
         .opacity(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.6 : 1.0)
     }
@@ -222,7 +232,7 @@ private struct MockSessionRepositoryForEditPreview: SessionRepositoryProtocol {
         isSynced: true,
         updatedAt: Date()
     )
-    let vm = StoryDetailViewModel(
+    let previewViewModel = StoryDetailViewModel(
         storyId: sample.id,
         getStoryDetailUseCase: MockGetStoryDetailUseCaseForEditPreview(story: sample),
         getLocationUseCase: MockGetLocationUseCaseForEditPreview(),
@@ -231,5 +241,5 @@ private struct MockSessionRepositoryForEditPreview: SessionRepositoryProtocol {
         syncStoriesUseCase: MockSyncStoriesUseCaseForEditPreview(),
         sessionRepository: MockSessionRepositoryForEditPreview()
     )
-    return EditStoryView(viewModel: vm)
+    return EditStoryView(viewModel: previewViewModel)
 }

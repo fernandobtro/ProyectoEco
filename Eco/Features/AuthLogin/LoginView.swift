@@ -6,13 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Main entry point for returning users, supporting email an social auth.
-//  Responsabilities:
-//  - Render the brand's visual.
+//  Purpose: Returning users: email/password plus social actions via ``SocialAuthViewModel``.
+//
 
 import Foundation
 import SwiftUI
 
+/// Email and social sign-in UI. Auth context: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (and social entry).
 struct LoginView: View {
     @Bindable var viewModel: LoginViewModel
     @Bindable var socialViewModel: SocialAuthViewModel

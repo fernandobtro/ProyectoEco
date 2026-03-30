@@ -13,6 +13,7 @@
 
 import Foundation
 
+/// Interface for local user data operations, decoupling the repository from SwiftData.
 protocol UserLocalDataSourceProtocol {
     /// Persists a user entity to the local storage.
     func save(user: UserEntity) async throws

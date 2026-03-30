@@ -4,9 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Implements `GetAuthorProfileByIdUseCase` using repositories and async side effects.
+//
 
 import Foundation
 
+/// Implements `GetAuthorProfileByIdUseCase` using repositories and async side effects.
 final class GetAuthorProfileByIdUseCaseImpl: GetAuthorProfileByIdUseCaseProtocol {
     private let repository: AuthorProfileRepositoryProtocol
 

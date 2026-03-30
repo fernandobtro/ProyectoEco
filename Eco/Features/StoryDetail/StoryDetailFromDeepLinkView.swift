@@ -4,12 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Wrapper que resuelve storyId (string) antes de mostrar el detalle.
-//  Si no existe localmente, hace sync y reintenta (offline-first).
+//  Purpose: Resolves a string story id from deep links/notifications to a local UUID, then presents ``StoryDetailView`` (sync/retry when missing).
 //
 
 import SwiftUI
 
+/// Entry from `AppRouter` / notifications: resolve id, then show detail or a not-found state.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Story Detail (Read / Unlock / Edit / Delete) Pipeline** (notification/deep link).
 struct StoryDetailFromDeepLinkView: View {
     let storyId: String
     private let resolveStory: (String) async -> UUID?

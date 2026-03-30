@@ -8,9 +8,6 @@
 //
 //  Purpose: Write the nickname to session storage and sync the Firebase-backed author profile.
 //
-//  Responsibilities:
-//  - Apply validation, persist locally, then load or create `AuthorProfile` through the repository.
-//
 
 import FirebaseAuth
 import Foundation
@@ -21,6 +18,7 @@ private let saveSessionNicknameLogger = Logger(
     category: "SaveSessionNickname"
 )
 
+/// Write the nickname to session storage and sync the Firebase-backed author profile.
 final class SaveSessionNicknameUseCaseImpl: SaveSessionNicknameUseCaseProtocol {
 
     // MARK: - Dependencies
@@ -74,7 +72,7 @@ final class SaveSessionNicknameUseCaseImpl: SaveSessionNicknameUseCaseProtocol {
         } catch {
             // Policy: do not fail onboarding if remote persistence fails after local save.
             saveSessionNicknameLogger.error(
-                "El Sync remoto falló después de guardar el nickname: \(error.localizedDescription, privacy: .public)"
+                "Remote sync failed after saving nickname: \(error.localizedDescription, privacy: .public)"
             )
         }
     }

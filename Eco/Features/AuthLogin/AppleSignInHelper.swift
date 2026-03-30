@@ -6,12 +6,7 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
-//  Purpose: Bridge between UIKit/AuthenticationServices delegates and Swift Concurrency.
-//
-//  Responsibilities:
-//  - Securely generate and hash nonces to prevent replay attacks during authentication.
-//  - Coordinate the ASAuthorizationController flow and UI presentation context.
-//  - Encapsulate the raw Apple credentials into a simplified 'AppleSignInResult' for the domain layer.
+//  Purpose: Bridges `ASAuthorizationController` to async/await and supplies hashed nonces for Sign in with Apple.
 //
 
 import AuthenticationServices
@@ -19,10 +14,9 @@ import CryptoKit
 import Foundation
 import UIKit
 
-/// A coordinator for the Sign in with Apple flow.
+/// Coordinator for Sign in with Apple: nonce generation, `ASAuthorizationController` presentation, and delegate bridge to one async call.
 ///
-/// This helper abstracts the complexity of `ASAuthorizationControllerDelegate`,
-/// transforming the multi-step delegate pattern into a single asynchronous call.
+/// Used by ``SocialAuthViewModel``. Auth context: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (social providers).
 final class AppleSignInHelper: NSObject {
     
     // MARK: - Types
@@ -40,12 +34,12 @@ final class AppleSignInHelper: NSObject {
 
     // MARK: - Public API
     
-    /// Triggers the Apple ID authentication dialog.
+    /// Presents the Apple ID sheet and resumes when the delegate completes.
     ///
-    /// - Returns: An ``AppleSignInResult``containing the identity token and the raw nonce.
-    /// - Throws: ``AuthError`` if the user cancels or the credentials are invalid.
+    /// - Returns: An ``AppleSignInResult`` containing the identity token and raw nonce.
+    /// - Throws: ``AuthError`` if the user cancels or credentials are invalid.
     ///
-    /// - Note: in the Async/Await bridge we suspend the function and wait for the delegete to resume via continuation.
+    /// - Note: Suspends until the delegate resumes this call via `continuation`.
     func signIn() async throws -> AppleSignInResult {
         let nonce = randomNonceString()
         currentNonce = nonce
@@ -59,14 +53,14 @@ final class AppleSignInHelper: NSObject {
         controller.delegate = self
         controller.presentationContextProvider = self
 
-        // MARK: Async/Await Bridge
+        // MARK: - Async-Await Bridge
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             controller.performRequests()
         }
     }
 
-    // MARK: Security Helpers
+    // MARK: - Security Helpers
     
     /// Generates a secure random string for use as a nonce.
     private func randomNonceString(length: Int = 32) -> String {
@@ -91,8 +85,7 @@ final class AppleSignInHelper: NSObject {
 
 extension AppleSignInHelper: ASAuthorizationControllerDelegate {
     
-    /// Handles succesful Apple ID authentication by resuming the async continuation-
-    /// - Note: This is the bridge back to the async `signIn()` method. It validates the identity token and nonce before resuming.
+    /// Resumes ``signIn()`` with a validated identity token and nonce.
     func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
@@ -100,7 +93,7 @@ extension AppleSignInHelper: ASAuthorizationControllerDelegate {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let identityToken = appleIDCredential.identityToken,
               let nonce = currentNonce else {
-            // MARK: Resume with error if credentials are malformed
+            // MARK: - Malformed Credentials
             continuation?.resume(throwing: AuthError.invalidCredentials)
             continuation = nil
             currentNonce = nil
@@ -113,7 +106,7 @@ extension AppleSignInHelper: ASAuthorizationControllerDelegate {
             fullName: appleIDCredential.fullName
         )
         
-        // MARK: Success - Returning result to the 'signIn' caller
+        // MARK: - Sign-In Success
         continuation?.resume(returning: result)
         continuation = nil
         currentNonce = nil

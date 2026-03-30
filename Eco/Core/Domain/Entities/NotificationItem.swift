@@ -4,12 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Modelo de dominio para eventos de notificación in-app.
-//  Solo datos: el copy visible lo resuelve la capa Features (`NotificationPresentation`).
+//  Purpose: Domain record for in-app notification events, user-facing copy lives in Features (`NotificationPresentation`).
 //
 
 import Foundation
 
+/// Domain entity `NotificationItem` (pure model, no framework UI).
 struct NotificationItem: Identifiable, Equatable {
     enum NotificationType: String, Codable {
         case proximityGrouped

@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 15/03/26.
 //
+//  Purpose: Bottom tab bar with map/collection pills, animated selection, and center “+” action.
+//
 
 import Foundation
 import SwiftUI
 
+/// Root shell tab bar, forwards `onPlusButtonTap` to planting flow.
 struct CustomTabBar: View {
     @Binding var selectedTab: TabBar
     var onPlusButtonTap: () -> Void

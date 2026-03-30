@@ -16,7 +16,7 @@ import XCTest
 
 extension XCTestCase {
 
-    /// Runs an async closure and fails the test if it throws; returns the value on success.
+    /// Runs an async closure and fails the test if it throws, returns the value on success.
     @discardableResult
     func awaitAssertNoThrow<T>(
         file: StaticString = #filePath,

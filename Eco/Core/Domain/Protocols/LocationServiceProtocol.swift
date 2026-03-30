@@ -6,6 +6,8 @@
 //
 //  Created by Fernando Buenrostro on 27/02/26.
 //
+//  Purpose: Domain/service protocol `LocationServiceProtocol`.
+//
 
 import Combine
 import CoreLocation
@@ -13,43 +15,44 @@ import Foundation
 
 // MARK: - Location Service Protocol
 
+/// Domain/service protocol `LocationServiceProtocol`.
 protocol LocationServiceProtocol {
     var delegate: LocationServiceDelegate? { get set }
     
-    /// Flujo reactivo que emite la ubicación actual para múltiples interesados (replay del último valor para nuevos suscriptores)
+    /// Hot stream of coordinates, new subscribers receive the last known value immediately.
     var locationPublisher: AnyPublisher<CLLocationCoordinate2D?, Never> { get }
 
-    /// Última coordenada del GPS (`nil` hasta el primer `didUpdateLocations`).
+    /// Last fix from Core Location (`nil` until the first `didUpdateLocations`).
     var lastKnownCoordinate: CLLocationCoordinate2D? { get }
     
     var storiesUpdatePublisher: AnyPublisher<Void, Never> { get }
     
-    /// El "Interruptor" para apagar el radar a voluntad
+    /// Whether continuous location / geofencing monitoring is active.
     var isMonitoringEnabled: Bool { get }
     
-    /// Solicita permisos de "Cuando se use la app"
+    /// Requests “When In Use” authorization.
     func requestWhenInUse() async throws
     
-    /// Solicita permisos de "Siempre" para que funcione en segundo plano
+    /// Requests “Always” authorization for background geofencing.
     func requestAlways() async throws
     
-    /// Inicia la vigilancia de las historias cercanas (Geofencing)
+    /// Starts monitoring the given stories as regions (geofencing).
     func startMonitoring(stories: [Story])
     
-    /// Apaga todo el consumo de GPS y deja de vigilar (Ahorro de batería/datos)
+    /// Stops GPS updates and region monitoring (battery / data saving).
     func stopMonitoring()
     
-    /// Petición única de ubicación para el autor que quiere plantar un Eco
+    /// One-shot location request for planting flow.
     func requestSingleLocation()
 }
 
 // MARK: - Location Service Delegate
 
 protocol LocationServiceDelegate: AnyObject {
-    /// Se detona cuando el usuario entra en el radio de 50m de un Eco
+    /// Called when the user enters a monitored story region.
     func didEnterStoryRegion(id: UUID)
     
-    /// Proporciona la ubicación exacta para plantar historias o actualizar el mapa
+    /// Delivers a fresh coordinate for planting or map refresh.
     func didUpdateLocation(latitude: Double, longitude: Double)
     
     func didFailWithError(_ error: Error)

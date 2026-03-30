@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Datos listos para UI (tarjetas y filas): el ViewModel mapea desde `Story`.
+//  Purpose: Immutable row/card payload derived from ``Story`` in feature view models (lists and map explore).
 //
 
 import Foundation
 
+/// Pre-formatted strings and flags for ``StoryListRowView``, ``StoryCardView``, and ``CollectionStoryCardRow``.
 struct StoryViewData: Identifiable, Equatable {
     let id: UUID
     let title: String
@@ -17,6 +18,6 @@ struct StoryViewData: Identifiable, Equatable {
     let showMineBadge: Bool
     let footnote: String?
     let footnoteIncludesDistance: Bool
-    /// Solo Explorar: píldora «Muy cerca» cuando hay ubicación y distancia &lt; 10 m.
+    /// Explore mode: show a “very close” pill when location is known and distance is under 10 m.
     let showNearbyPill: Bool
 }

@@ -6,18 +6,16 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Collection tab UI for planted and discovered Ecos, with detail sheet and empty states.
-//
-//  Responsibilities:
-//  - Show segmented lists, pull to refresh, navigation into detail, and map shortcuts for discovered items.
-//  - Wire StoryDetailView with a factory and refresh the collection after delete.
+//  Purpose: Collection tab UI: segmented lists, detail sheet, empty states, refresh and delete wiring.
 //
 
 import CoreLocation
 import Foundation
 import SwiftUI
 
-/// Tab screen listing the user’s planted Ecos and discovered Ecos, with optional empty-state actions.
+/// Tab screen for planted and discovered Ecos: segmented lists, pull-to-refresh, detail via factory, empty-state CTAs.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Collection (Planted / Discovered) Pipeline**.
 struct CollectionView: View {
 
     // MARK: - Properties
@@ -98,7 +96,7 @@ struct CollectionView: View {
         )
     }
 
-    // MARK: - Private views
+    // MARK: - Private Views
 
     @ViewBuilder
     private var listContent: some View {
@@ -229,7 +227,7 @@ struct CollectionView: View {
             .padding(.bottom, 8)
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
     /// Opens Apple Maps centered on the discovered story with a titled pin query.
     private func openRouteToDiscoveredStory(id: UUID) {
         guard let coordinate = viewModel.discoveredDestinationCoordinate(for: id) else { return }
@@ -246,14 +244,14 @@ struct CollectionView: View {
     }
 }
 
-// MARK: - Sheet identity
+// MARK: - Sheet Identity
 /// Wraps a `UUID` so SwiftUI `.sheet(item:)` can use stable identity for story detail.
 private struct IdentifiableStoryID: Identifiable, Equatable {
     let value: UUID
     var id: UUID { value }
 }
 
-// MARK: - Preview mocks
+// MARK: - Preview Mocks
 private struct MockGetPlantedStoriesUseCaseForPreview: GetPlantedStoriesUseCaseProtocol {
     func execute(page: Int, pageSize: Int) async throws -> StoriesPage {
         let sample = Story(

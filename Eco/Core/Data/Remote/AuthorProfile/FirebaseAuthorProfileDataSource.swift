@@ -6,11 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Remote author profile I/O (`FirebaseAuthorProfileDataSource`).
+//
 
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
+/// Remote author profile I/O (`FirebaseAuthorProfileDataSource`).
 final class FirebaseAuthorProfileDataSource {
     private let collectionName = "authorProfiles"
 
@@ -44,7 +47,8 @@ final class FirebaseAuthorProfileDataSource {
         guard let uid = Auth.auth().currentUser?.uid else {
             return nil
         }
-        // Si no existe el documento, devolvemos nil en lugar de lanzar error
+    
+        // If there's no document (doesn't exists), return nil instead of throwing error
         do {
             return try await get(by: uid)
         } catch {
@@ -64,7 +68,7 @@ final class FirebaseAuthorProfileDataSource {
             .setData(encode(profile), merge: true)
     }
 
-    // MARK: - Mapping helpers
+    // MARK: - Mapping Helpers
 
     private func encode(_ profile: AuthorProfile) -> [String: Any] {
         [

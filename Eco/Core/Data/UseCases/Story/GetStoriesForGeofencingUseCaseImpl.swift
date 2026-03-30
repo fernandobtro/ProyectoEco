@@ -4,14 +4,17 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: Implements `GetStoriesForGeofencingUseCase` using repositories and async side effects.
+//
 
 import CoreLocation
 import Foundation
 
+/// Implements `GetStoriesForGeofencingUseCase` using repositories and async side effects.
 final class GetStoriesForGeofencingUseCaseImpl: GetStoriesForGeofencingUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
 
-    /// Prefetch radius around the user before sorting; must cover monitored regions (see `GeofencingService`).
+    /// Prefetch radius around the user before sorting, must cover monitored regions (see `GeofencingService`).
     private static let prefetchRadiusMeters: Double = 5000
 
     init(storyRepository: StoryRepositoryProtocol) {

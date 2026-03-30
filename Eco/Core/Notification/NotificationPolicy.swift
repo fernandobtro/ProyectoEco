@@ -4,24 +4,25 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Filtro anti-spam: dedupe persistente, rate limiting.
+//  Purpose: Anti-spam for proximity alerts: persistent dedupe keys and daily / inter-notification rate limits.
 //
 
 import Foundation
 
+/// Decides which story IDs may notify and when (dedupe + rate caps).
 enum NotificationPolicy {
     private static let notifiedStoriesKey = "eco.notifiedStories"
     private static let lastNotificationDateKey = "eco.lastNotificationDate"
     private static let dailyCountKey = "eco.proximityDailyCount"
     private static let dailyCountDateKey = "eco.proximityDailyCountDate"
 
-    /// Límite diario: evita saturar; subir con cuidado (producto “poco ruido”).
+    /// Max proximity notifications per calendar day (keep UX low-noise).
     static let maxPerDay = 8
-    /// Entre avisos distintos: suficiente para no vibrar en bucle al límite de una geocerca, pero permite varios Ecos en una caminata.
+    /// Minimum gap between distinct notifications (reduces buzz when hugging a geofence edge, still allows several stories on a walk).
     static let minIntervalSeconds: TimeInterval = 60 * 4
     static let dedupeHours = 24
 
-    /// Devuelve los storyIds que pueden notificarse (filtrados por dedupe).
+    /// Story IDs that pass the rolling dedupe window.
     static func filterEligible(storyIds: [String]) -> [String] {
         let notified = loadNotifiedStories()
         let cutoff = Date().addingTimeInterval(-TimeInterval(dedupeHours * 3600))
@@ -31,7 +32,7 @@ enum NotificationPolicy {
         }
     }
 
-    /// ¿Podemos enviar una notificación ahora? (rate limit)
+    /// Whether daily count and minimum interval allow another notification now.
     static func canSendNow() -> Bool {
         let (count, date) = loadDailyState()
         let now = Date()
@@ -45,7 +46,7 @@ enum NotificationPolicy {
         return now.timeIntervalSince(last) >= minIntervalSeconds
     }
 
-    /// Registra que notificamos estos storyIds y actualiza rate limit.
+    /// Persists dedupe timestamps and bumps daily / last-sent counters.
     static func recordNotification(storyIds: [String]) {
         let now = Date()
         var notified = loadNotifiedStories()

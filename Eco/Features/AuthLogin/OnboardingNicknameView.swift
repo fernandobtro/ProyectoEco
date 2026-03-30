@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Post-auth step to choose a display nickname before entering the app.
+//
 
 import Foundation
 import SwiftUI
 
+/// Single-field nickname capture, calls `onFinish` with the trimmed value.
 struct OnboardingNicknameView: View {
     @State private var nickname: String = ""
     var onFinish: (String) -> Void

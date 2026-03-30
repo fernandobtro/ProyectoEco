@@ -4,11 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Coordinates map sheets for creating a story and opening the reader from the map.
-//
-//  Responsibilities:
-//  - Track the active sheet, reader dismiss behavior, and the last planting result for the map flow.
-//  - Build sheet content from factories so the router stays small and testable.
+//  Purpose: Map-tab sheets: create story, in-map reader, and handoff of last planting to `MapViewModel`.
 //
 
 import Foundation
@@ -17,6 +13,7 @@ import CoreLocation
 import SwiftUI
 
 // MARK: - Routes
+/// Active sheet identity for the map tab (`createStory` or `storyDetail`).
 enum MapDestination: Identifiable, Hashable {
     case createStory
     case storyDetail(UUID)
@@ -30,9 +27,10 @@ enum MapDestination: Identifiable, Hashable {
 }
 
 // MARK: - Router
+/// Owns `sheetDestination`, reader lifecycle, and `recentPlanting` consumed by ``RootView`` / ``MapViewModel``.
 @Observable
 class MapRouter {
-    // MARK: - Navigation state
+    // MARK: - Navigation State
     /// The sheet shown on the map, or nil when nothing is presented.
     var sheetDestination: MapDestination?
 
@@ -54,7 +52,7 @@ class MapRouter {
         self.authorProfileByIdUseCase = authorProfileByIdUseCase
     }
 
-    // MARK: - Public navigation methods
+    // MARK: - Public Navigation
     func navigateToCreateStory() {
         storyReaderSheetWasPresented = false
         sheetDestination = .createStory
@@ -103,7 +101,7 @@ class MapRouter {
     }
 }
 
-// MARK: - Sheet wrapper (story detail)
+// MARK: - Story Detail Sheet Wrapper
 private struct MapPresentedStoryDetailView: View {
     let authorProfileByIdUseCase: GetAuthorProfileByIdUseCaseProtocol
     @State private var viewModel: StoryDetailViewModel

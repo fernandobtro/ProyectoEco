@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: First launch screen: welcome copy, terms acceptance, register vs login entry points.
+//
 
 import Foundation
 import SwiftUI
 
+/// Entry step before sign-up or sign-in, drives navigation via `onRegisterSelected` / `onLoginSelected`.
 struct WelcomeView: View {
     @State private var termsAccepted = false
     var onRegisterSelected: () -> Void

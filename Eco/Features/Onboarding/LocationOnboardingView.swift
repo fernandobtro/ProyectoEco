@@ -4,9 +4,14 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
+//  Purpose: First-run explanation for location access before the system permission prompt (map discovery and planting).
+//
 
 import SwiftUI
 
+/// Marketing-style screen, `onContinue` should trigger the actual authorization flow (e.g. from ``AuthGateView`` / root shell).
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Map Story Discovery Pipeline** (location permission).
 struct LocationOnboardingView: View {
     var onContinue: () -> Void
 

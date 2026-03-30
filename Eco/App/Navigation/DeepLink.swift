@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Represents a navigable destination triggered by external events (push notifications, deep links).
+//  Purpose: Serializable navigation targets from notifications, URLs, and `AppRouter` (`storyDetail`, `openMap`).
 //
 
 import Foundation
 
+/// Parsed handoff consumed by ``AppRouter`` and `RootView` sheets.
 enum DeepLink {
     case storyDetail(id: String)
     case openMap

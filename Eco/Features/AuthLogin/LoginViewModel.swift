@@ -6,10 +6,13 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Binds the login form to ``LoginUseCaseProtocol`` with loading and error surface.
+//
 
 import Foundation
 import Observation
 
+/// View state for email/password sign-in.
 @Observable
 final class LoginViewModel {
     

@@ -6,9 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 17/03/26.
 //
+//  Purpose: Branded splash while the app boots and the auth gate resolves session state.
+//
 
 import SwiftUI
 
+/// Static branding shown during cold start before ``AuthGateView`` advances the flow.
 struct SplashView: View {
     var body: some View {
         ZStack {

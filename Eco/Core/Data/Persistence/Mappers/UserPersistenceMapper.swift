@@ -8,14 +8,10 @@
 //
 //  Purpose: Convert between SwiftData `UserEntity` and domain `User`, including related story collections.
 //
-//  Responsibilities:
-//  - Build domain users with hydrated planted and found stories supplied by the caller.
-//  - Persist domain users by storing story id arrays on the entity.
-//
 
 import Foundation
 
-/// Stateless mapper for user persistence; hydration of `Story` values happens outside this type.
+/// Stateless mapper for user persistence, hydration of `Story` values happens outside this type.
 enum UserPersistenceMapper {
 
     // MARK: - Domain

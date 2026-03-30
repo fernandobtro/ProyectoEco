@@ -4,11 +4,12 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Pestañas estilo diseño: activo en verde bosque + subrayado grueso; inactivo en gris.
+//  Purpose: Custom two-tab control for planted vs discovered (accent + underline when selected).
 //
 
 import SwiftUI
 
+/// Binds `selection` to ``CollectionTab`` for the Collection screen header.
 struct CollectionSegmentedControl: View {
     @Binding var selection: CollectionTab
 

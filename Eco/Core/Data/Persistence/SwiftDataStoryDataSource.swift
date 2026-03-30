@@ -6,16 +6,15 @@
 //
 //  Created by Fernando Buenrostro on 02/03/26.
 //
-//  Purpose: Local SwiftData access for story entities and optimized spatial/batch queries.
+//  Purpose: Local SwiftData access for story entities, sync batches, map bounds, and paginated planted queries.
 //
-//  - Persist and manage the lifecycle of StoryEntity objects.
-//  - Execute batch fetches to support sync reconciliation.
-//  - Perform spatial filtering via bounding boxes for map and geofencing discovery.
+//  Narrative context: `docs/EcoCorePipelines.md` (Map discovery, Collection, Sync).
 //
 
 import Foundation
 import SwiftData
 
+/// Local SwiftData access for story entities, sync batches, map bounds, and paginated planted queries.
 @MainActor
 class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
 
@@ -69,7 +68,7 @@ class SwiftDataStoryDataSource: StoryLocalDataSourceProtocol {
         return try modelContext.fetch(descriptor)
     }
 
-    /// Active, non-deleted stories for one author; same stable sort as ``fetchActiveStoriesSortedByUpdatedAtDescending()``.
+    /// Active, non-deleted stories for one author, same stable sort as ``fetchActiveStoriesSortedByUpdatedAtDescending()``.
     func fetchPlantedStories(authorID: String, limit: Int, offset: Int) async throws -> [StoryEntity] {
         let aid = authorID
         let safeLimit = max(0, limit)

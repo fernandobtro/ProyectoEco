@@ -4,12 +4,7 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: App entry, Firebase setup, notifications, and sign-in URL handling.
-//
-//  Responsibilities:
-//  - Configure Firebase and the notification center delegate.
-//  - Forward notification payloads to AppRouter for cold starts and when the app is already open.
-//  - Host the root auth flow and Google Sign-In open URL handling.
+//  Purpose: App entry: Firebase, notification delegate - `AppRouter`, `AuthGateView`, Google Sign-In URLs.
 //
 
 import FirebaseCore
@@ -18,6 +13,7 @@ import SwiftData
 import SwiftUI
 import UserNotifications
 
+/// Configures Firebase on launch and bridges push/local notification taps into ``AppRouter``.
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     // MARK: - UIApplicationDelegate
@@ -55,7 +51,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     }
 }
 
-// MARK: - Notification payload
+// MARK: - Notification Payload
 /// If the app was closed (`isLaunch`), queues the next step on `AppRouter`, if it’s already running, navigates right away.
 private func handleNotificationPayload(_ payload: [AnyHashable: Any], isLaunch: Bool) {
     if let storyId = extractStoryId(from: payload) {
@@ -91,7 +87,10 @@ private func extractDeepLinkMap(from payload: [AnyHashable: Any]) -> Bool {
     return false
 }
 
-// MARK: - App entry
+// MARK: - App Entry
+/// Application entry point, composition and factories live in ``AppDIContainer``.
+///
+/// Firebase, notifications, and URL handling are outlined in `docs/EcoCorePipelines.md` (auth and cross-cutting sections).
 @main
 struct EcoApp: App {
     @State private var container = AppDIContainer()

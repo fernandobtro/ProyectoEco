@@ -6,16 +6,20 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
+//  Purpose: Asset-backed semantic colors and `Color.theme` entry point for SwiftUI.
+//
 
 import Foundation
 import SwiftUI
 
+/// Namespace hook used as `Color.theme` across the app.
 extension Color {
     static let theme = ColorTheme()
 }
 
+/// Eco palette tokens mapped from the asset catalog (accent, cream text, components).
 struct ColorTheme {
-    // Colores en Assets (única fuente de verdad)
+    // Asset catalog is the single source of truth for named colors below.
     let accent = Color("AccentColor")
     let primaryComponent = Color("primaryComponent")
     let primaryText = Color("primaryText")
@@ -25,27 +29,27 @@ struct ColorTheme {
         Color(UIColor.systemBackground)
     }
 
-    /// Superficie secundaria (tinte suave a partir de `primaryComponent`).
+    /// Soft wash derived from `primaryComponent`.
     var secondaryBackground: Color {
         primaryComponent.opacity(0.2)
     }
 
-    /// Fondo crema para listas tipo Explorar / Colección: mismo valor que `primaryText` en Assets.
+    /// Cream list background for explore/collection, same asset token as `primaryText`.
     var exploreBackground: Color {
         primaryText
     }
 
-    /// Tarjetas sobre fondo claro: tinte ligero desde `primaryComponent`.
+    /// Card fill on light backgrounds (light tint from `primaryComponent`).
     var exploreCardBackground: Color {
         secondaryBackground
     }
 
-    /// Campos del perfil sobre fondo `accent`: solo `primaryComponent` con opacidad (sin hex nuevos).
+    /// Profile fields on `accent`: `primaryComponent` at fixed opacity (no extra hex values).
     var profileFieldSurface: Color {
         primaryComponent.opacity(0.48)
     }
 
-    /// Destructivo suave (cerrar sesión, errores de formulario); coherente con swipe eliminar.
+    /// Muted destructive (logout, form errors), aligned with swipe-to-delete tone.
     var profileDestructive: Color {
         Color.red.opacity(0.88)
     }

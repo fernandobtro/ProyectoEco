@@ -4,17 +4,16 @@
 //
 //  Copyright © 2026 Fernando Gonzalez Buenrostro.
 //
-//  Purpose: Main shell after sign-in, tabs, sync, and entry points from notifications or deep links.
-//
-//  Responsibilities:
-//  - Host the map, collection, story creation, profile, and notifications in one tab bar.
-//  - Surface sync state, handle story and map deep links, and wire the map router into the map tab.
+//  Purpose: Post-auth shell: tabs, sync indicator, `MapRouter`, story creation sheet, profile/notifications, deep links.
 //
 
 import SwiftUI
 import UserNotifications
 import CoreLocation
 
+/// Tab host for map, collection, planting (`MapRouter`), profile, and notifications, wires `AppRouter` and onboarding cards.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Plant Story Pipeline** (`RootView` + `MapRouter`), also **Map Story Discovery**, **Collection**, **Story Detail**, **Cross-Cutting: Sync, Geofencing, Notifications**.
 struct RootView: View {
     let container: any RootViewDependencyProviding
 
@@ -30,7 +29,7 @@ struct RootView: View {
     @State private var syncStateService: SyncStateService
 
     // MARK: - Persistent Settings
-    /// Local persistence to remember if the user has already interacted with the Welcoming flow.
+    /// Whether the user has completed or dismissed the notifications onboarding prompt.
     @AppStorage("eco.hasSeenNotificationsOnboarding") private var hasSeenNotificationsOnboarding = false
     @AppStorage("eco.hasRequestedAlwaysLocationUpgrade") private var hasRequestedAlwaysLocationUpgrade = false
 

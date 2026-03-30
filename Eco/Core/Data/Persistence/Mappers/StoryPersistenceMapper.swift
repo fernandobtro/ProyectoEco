@@ -8,13 +8,10 @@
 //
 //  Purpose: Convert between SwiftData StoryEntity rows and domain "Story" values for repositories.
 //
-//  Responsibilities:
-//  - Map fields and derive isSynced from sync status and soft-delete state.
-//  - Create new pending rows or update existing ones, adjusting syncStatus for the sync pipeline.
-//
 
 import Foundation
 
+/// Convert between SwiftData StoryEntity rows and domain "Story" values for repositories.
 enum StoryPersistenceMapper {
 
     // MARK: - Domain
@@ -28,7 +25,7 @@ enum StoryPersistenceMapper {
             authorID: entity.authorID,
             latitude: entity.latitude,
             longitude: entity.longitude,
-            isSynced: SyncStatus(rawValue: entity.syncStatus) == .synced && entity.deletedAt == nil,
+            isSynced: entity.syncStatus == .synced && entity.deletedAt == nil,
             updatedAt: entity.updatedAt
         )
     }
@@ -47,8 +44,8 @@ enum StoryPersistenceMapper {
             existing.longitude = story.longitude
             existing.updatedAt = story.updatedAt
 
-            if SyncStatus(rawValue: existing.syncStatus) == .synced {
-                existing.syncStatus = SyncStatus.pendingUpdate.rawValue
+            if existing.syncStatus == .synced {
+                existing.syncStatus = .pendingUpdate
             }
 
             return existing
@@ -61,7 +58,7 @@ enum StoryPersistenceMapper {
                 latitude: story.latitude,
                 longitude: story.longitude,
                 remoteId: nil,
-                syncStatus: SyncStatus.pendingCreate.rawValue,
+                syncStatus: .pendingCreate,
                 updatedAt: story.updatedAt,
                 deletedAt: nil
             )

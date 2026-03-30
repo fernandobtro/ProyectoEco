@@ -6,16 +6,16 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Manages the global authentication state and coordinates identity synchronization.
-//  Responsabilities:
-//  - Listen to Firebase Auth state changes and evaluate session validity.
-//  - Reconcile local vs remote nicknames to ensure a consistent user identity.
-//  - Provide actions for onboarding completion and secure logouts.
+//  Purpose: Root auth gate: Firebase session, nickname onboarding, logout.
+//
 
 import FirebaseAuth
 import Foundation
 import Observation
 
+/// Coordinates sign-in state with Firebase, nickname onboarding, and session cleanup.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Email Login Pipeline** (and related auth flows).
 @Observable
 final class AuthGateViewModel {
     
@@ -73,7 +73,7 @@ final class AuthGateViewModel {
             let localNickname = getCurrentSessionUseCase.getNickname()
             let remoteNickname = try? await getAuthorProfileUseCase.execute()?.nickname
 
-            // MARK: Identity Reconciliation Logic
+            // MARK: - Identity Reconciliation
             // Try to restore from Cloud (Remote)
             if let safeRemote = EcoAuthorDisplayFormatting.displayNickname(remoteNickname, authorFirebaseUid: uid) {
                 await saveSessionNicknameUseCase.execute(nickname: safeRemote)

@@ -6,18 +6,14 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Load one story for the detail screen, distance-based unlock, and author edit/delete.
-//
-//  Responsibilities:
-//  - Fetch story with timeout, compute author vs viewer, distance, and unlock within radius.
-//  - Update or delete the story and trigger sync, surfacing errors on failure.
+//  Purpose: Story detail: load, proximity unlock, author edit/delete.
 //
 
 import CoreLocation
 import Foundation
 import Observation
 
-// MARK: - Private loading types
+// MARK: - Private Loading Types
 
 private enum StoryDetailLoadingError: LocalizedError {
     case timeout
@@ -30,8 +26,9 @@ private enum StoryDetailLoadingError: LocalizedError {
     }
 }
 
-// MARK: - UI state
+// MARK: - UI State
 
+/// Load lifecycle and loaded story payload for the detail screen.
 enum StoryDetailState: Equatable {
     case idle
     case loading
@@ -39,6 +36,9 @@ enum StoryDetailState: Equatable {
     case error(String)
 }
 
+/// Loads one story with a time bound, applies reader unlock by distance, and routes author mutations through use cases.
+///
+/// Narrative: `docs/EcoCorePipelines.md` — **Story Detail (Read / Unlock / Edit / Delete) Pipeline**.
 @MainActor
 @Observable
 final class StoryDetailViewModel {
@@ -55,7 +55,7 @@ final class StoryDetailViewModel {
     private let unlockRadius: Double = 50.0
     private let loadTimeoutNanoseconds: UInt64 = 6_000_000_000
 
-    // MARK: - Inputs & published state
+    // MARK: - Inputs and Published State
     let storyId: UUID
     var state: StoryDetailState = .idle
 
@@ -89,7 +89,7 @@ final class StoryDetailViewModel {
         self.sessionRepository = sessionRepository
     }
 
-    // MARK: - Derived state
+    // MARK: - Derived State
     var story: Story? {
         if case let .loaded(story) = state {
             return story
@@ -215,7 +215,7 @@ final class StoryDetailViewModel {
         }
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Helpers
 
     /// Races `getStoryDetailUseCase` against a fixed timeout using a throwing task group.
     ///

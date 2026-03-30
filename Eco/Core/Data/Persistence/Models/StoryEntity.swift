@@ -8,15 +8,11 @@
 //
 //  Purpose: SwiftData entity for local story persistence with full synchronization state tracking.
 //
-//  Responsibilities:
-//  - Store spatial (coordinates) and textual data for stories planted or discovered.
-//  - Maintain sync metadata (remoteId, syncStatus, updatedAt) to coordinate with Firestore.
-//  - Support logical deletion (soft delete) via 'deletedAt' to ensure cleanup across devices.
-//
 
 import Foundation
 import SwiftData
 
+/// SwiftData entity for local story persistence with full synchronization state tracking.
 @Model
 class StoryEntity {
     @Attribute(.unique) var id: UUID
@@ -28,11 +24,22 @@ class StoryEntity {
     var longitude: Double
     
     var remoteId: String?
-    var syncStatus: String
+    var syncStatus: SyncStatus
     var updatedAt: Date
     var deletedAt: Date?
     
-    init(id: UUID, title: String, content: String, authorID: String, latitude: Double, longitude: Double, remoteId: String? = nil, syncStatus: String = "pendingCreate", updatedAt: Date = Date(), deletedAt: Date? = nil) {
+    init(
+        id: UUID,
+        title: String,
+        content: String,
+        authorID: String,
+        latitude: Double,
+        longitude: Double,
+        remoteId: String? = nil,
+        syncStatus: SyncStatus = .pendingCreate,
+        updatedAt: Date = Date(),
+        deletedAt: Date? = nil
+    ) {
         self.id = id
         self.title = title
         self.content = content

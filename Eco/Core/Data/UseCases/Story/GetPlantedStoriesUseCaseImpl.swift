@@ -6,11 +6,12 @@
 //
 //  Created by Fernando Buenrostro on 16/03/26.
 //
-//  Purpose: Load paginated “planted” stories for the current user; maps `page` → `offset` and uses `pageSize + 1` for `hasMore`.
+//  Purpose: Load paginated “planted” stories for the current user, maps `page` - `offset` and uses `pageSize + 1` for `hasMore`.
 //
 
 import Foundation
 
+/// Load paginated “planted” stories for the current user, maps `page` - `offset` and uses `pageSize + 1` for `hasMore`.
 final class GetPlantedStoriesUseCaseImpl: GetPlantedStoriesUseCaseProtocol {
     private let storyRepository: StoryRepositoryProtocol
     private let sessionRepository: SessionRepositoryProtocol
